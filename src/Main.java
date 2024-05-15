@@ -16,26 +16,40 @@ public class Main {
         int i = 0;
         boolean display = true;
         KeyListenerMenu keyListenerMenu = new KeyListenerMenu();
-        Frame curFrame = ParseImage.ParseImageF(path,picNames.get(i),x,y);
+        JFrame curFrame = new JFrame();
+        curFrame.setSize(x,y);
+        curFrame.setLayout(new FlowLayout());
+        curFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         String curKey = KeyListenerMenu.key;
+        JLabel label = Image.ParseImageF(new JLabel(),path,picNames.get(i),x,y);
+        curFrame.add(label);
 
         while(display == true){
             if(!curFrame.isVisible()){
                 curFrame.addKeyListener(keyListenerMenu);
                 curFrame.setVisible(true);
+                curFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             }
 
             if(!curKey.equals("none")){
                 if (curKey.equals("RIGHT") && i<picNames.size()-1){
                     i++;
-                    curFrame.setVisible(false);
-                    curFrame = ParseImage.ParseImageF(path,picNames.get(i),x,y);
+                    label = Image.ParseImageF(label,path,picNames.get(i),x,y);
                     KeyListenerMenu.key = "none";
-                }else if (curKey.equals("LEFT") && i>1){
+                    curFrame.setVisible(true);
+                }else if (curKey.equals("LEFT") && i>0){
                     i--;
-                    curFrame.setVisible(false);
-                    curFrame = ParseImage.ParseImageF(path,picNames.get(i),x,y);
+                    label = Image.ParseImageF(label,path,picNames.get(i),x,y);
                     KeyListenerMenu.key = "none";
+                    curFrame.setVisible(true);
+                }else if (curKey.equals("UP")){
+                    label = Image.reScale(curKey,label);
+                    KeyListenerMenu.key = "none";
+                    curFrame.setVisible(true);
+                }else if (curKey.equals("DOWN")){
+                    label = Image.reScale(curKey,label);
+                    KeyListenerMenu.key = "none";
+                    curFrame.setVisible(true);
                 }
             }
 

@@ -15,6 +15,10 @@ public class KeyListenerMenu implements KeyListener {
             key = "RIGHT";
         }else if (e.getKeyCode() == KeyEvent.VK_LEFT){
             key = "LEFT";
+        }else if (e.getKeyCode() == KeyEvent.VK_UP){
+            key = "UP";
+        }else if (e.getKeyCode() == KeyEvent.VK_DOWN){
+            key = "DOWN";
         }
     }
 
