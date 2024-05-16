@@ -32,6 +32,12 @@ public class Main {
         curFrame.add(label.first);
 
         while (display == true) {
+
+            if(!Menu.directory.equals("none")){
+                path = Menu.directory;
+                System.out.println(path);
+            }
+
             if (!curFrame.isVisible()) {
                 curFrame.addKeyListener(keyListenerMenu);
                 curFrame.setVisible(true);
@@ -60,7 +66,9 @@ public class Main {
                 }
             }
 
-            curFrame.requestFocus();
+            if(!Menu.isNeedsFocus()){
+                curFrame.requestFocus();
+            }
             curKey = KeyListenerMenu.key;
         }
     }

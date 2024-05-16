@@ -28,7 +28,7 @@ public class Image {
             } else {
                 multiplier = (double) y / img.getHeight();
             }
-            multiplier -= 0.08;
+            multiplier -= 0.1;
             newWidth = (int) (newWidth * multiplier);
             newHeight = (int) (newHeight * multiplier);
         }
