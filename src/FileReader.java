@@ -6,12 +6,14 @@ public class FileReader {
         ArrayList<String> fileNames = new ArrayList<String>();
         File folder = new File(path);
         File[] files = folder.listFiles();
-        for (File f : files) {
-            if (f.isFile()) {
-                if (f.getName().endsWith(".jpg") ||
-                        f.getName().endsWith(".png") ||
-                        f.getName().endsWith(".jpeg")) {
-                    fileNames.add(f.getName());
+        if(files != null) {
+            for (File f : files) {
+                if (f.isFile()) {
+                    if (f.getName().endsWith(".jpg") ||
+                            f.getName().endsWith(".png") ||
+                            f.getName().endsWith(".jpeg")) {
+                        fileNames.add(f.getName());
+                    }
                 }
             }
         }

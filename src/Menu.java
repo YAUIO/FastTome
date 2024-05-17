@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 public class Menu{
     static boolean needsFocus = false;
     static String directory = "none";
+
     public static JMenuBar getMenu(){
         JMenuBar jMenuBar = new JMenuBar();
 
@@ -51,7 +52,7 @@ public class Menu{
         return jMenuBar;
     }
 
-    public static String openDirDialog(){
+    public static void openDirDialog(){
         needsFocus = true;
         JDialog dialog = new JDialog();
         JTextField textField = new JTextField();
@@ -80,14 +81,9 @@ public class Menu{
                 dialog.setVisible(false);
                 needsFocus = false;
                 System.out.println(needsFocus);
+                directory = textField.getText();
             }
         });
-
-        if(!needsFocus){
-            return textField.getText();
-        }else{
-            return "none";
-        }
     }
 
     public static boolean isNeedsFocus() {

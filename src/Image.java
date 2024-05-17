@@ -8,7 +8,7 @@ public class Image {
     private static BufferedImage origImage;
 
     public static Pair<JLabel, BufferedImage> ParseImageF(JLabel lbl, String path, String image, int x, int y) throws IOException {
-        path = path + "\\" + image;
+        path = path + image;
         BufferedImage img = ImageIO.read(new File(path));
         int newWidth = img.getWidth();
         int newHeight = img.getHeight();

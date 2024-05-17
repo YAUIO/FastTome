@@ -11,7 +11,7 @@ public class Main {
     static JMenuBar jMenuBar;
 
     public static void main(String[] args) throws Exception {
-        String path = "D:\\Users\\User\\Pictures";
+        String path = "/home/yudek/Documents/JProjects/FastTome/";
         int x = 1280;
         int y = 720;
 
@@ -20,12 +20,19 @@ public class Main {
         int i = 0;
         boolean display = true;
         KeyListenerMenu keyListenerMenu = new KeyListenerMenu();
-        JFrame curFrame = new JFrame();
+        JFrame curFrame = new JFrame("FastTome");
+        Pair<JLabel, BufferedImage> label = new Pair<>(new JLabel(), new BufferedImage(x,y,BufferedImage.TYPE_INT_RGB));
         curFrame.setSize(x, y);
         curFrame.setLayout(new FlowLayout());
         curFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         String curKey = KeyListenerMenu.key;
-        Pair<JLabel, BufferedImage> label = Image.ParseImageF(new JLabel(), path, picNames.get(i), x, y);
+        if(!picNames.isEmpty()) {
+            label = Image.ParseImageF(label.first, path, picNames.get(i), x, y);
+        }else{
+            ImageIcon icon = new ImageIcon(label.second);
+            label.first.setIcon(icon);
+        }
+
         jMenuBar = Menu.getMenu();
         curFrame.setJMenuBar(jMenuBar);
         jMenuBar.setLocation(1000, 0);
@@ -35,7 +42,15 @@ public class Main {
 
             if(!Menu.directory.equals("none")){
                 path = Menu.directory;
-                System.out.println(path);
+                Menu.directory = "none";
+                picNames = FileReader.getFiles(path);
+                if(!picNames.isEmpty()) {
+                    label = Image.ParseImageF(label.first, path, picNames.get(i), x, y);
+                }else{
+                    ImageIcon icon = new ImageIcon(label.second);
+                    label.first.setIcon(icon);
+                }
+                curFrame.setVisible(true);
             }
 
             if (!curFrame.isVisible()) {
