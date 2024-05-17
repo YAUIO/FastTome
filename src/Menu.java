@@ -1,6 +1,4 @@
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,26 +22,11 @@ public class Menu{
         jMenu1.add(jMenuItem1);
         jMenu2.add(jMenuItem2);
 
-        jMenuItem.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Menu.openDirDialog();
-            }
-        });
+        jMenuItem.addActionListener(e -> Menu.openDirDialog());
 
-        jMenuItem1.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("open");
-            }
-        });
+        jMenuItem1.addActionListener(e -> System.out.println("open"));
 
-        jMenuItem2.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("open");
-            }
-        });
+        jMenuItem2.addActionListener(e -> System.out.println("open"));
 
         jMenuBar.add(jMenu);
         jMenuBar.add(jMenu1);
@@ -75,14 +58,11 @@ public class Menu{
         if(needsFocus){
             dialog.requestFocus();
         }
-        submit.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dialog.setVisible(false);
-                needsFocus = false;
-                System.out.println(needsFocus);
-                directory = textField.getText();
-            }
+        submit.addActionListener(e -> {
+            dialog.setVisible(false);
+            needsFocus = false;
+            System.out.println(needsFocus);
+            directory = textField.getText();
         });
     }
 

@@ -1,11 +1,7 @@
 import javax.swing.*;
-import javax.swing.plaf.MenuBarUI;
-import javax.swing.text.html.ImageView;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
 public class Main {
     static JMenuBar jMenuBar;
@@ -38,7 +34,7 @@ public class Main {
         jMenuBar.setLocation(1000, 0);
         curFrame.add(label.first);
 
-        while (display == true) {
+        while (display) {
 
             if(!Menu.directory.equals("none")){
                 path = Menu.directory;

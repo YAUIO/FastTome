@@ -3,7 +3,7 @@ import java.util.ArrayList;
 
 public class FileReader {
     public static ArrayList<String> getFiles(String path) {
-        ArrayList<String> fileNames = new ArrayList<String>();
+        ArrayList<String> fileNames = new ArrayList<>();
         File folder = new File(path);
         File[] files = folder.listFiles();
         if(files != null) {
