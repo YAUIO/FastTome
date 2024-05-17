@@ -7,7 +7,7 @@ public class Main {
     static JMenuBar jMenuBar;
 
     public static void main(String[] args) throws Exception {
-        String path = "/home/yudek/Documents/JProjects/FastTome/";
+        String path = "D:\\Users\\User\\Pictures\\Avka"; //add / for linux
         int x = 1280;
         int y = 720;
 
@@ -40,6 +40,7 @@ public class Main {
                 path = Menu.directory;
                 Menu.directory = "none";
                 picNames = FileReader.getFiles(path);
+                i = 0;
                 if(!picNames.isEmpty()) {
                     label = Image.ParseImageF(label.first, path, picNames.get(i), x, y);
                 }else{

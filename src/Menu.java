@@ -49,7 +49,6 @@ public class Menu{
         textField.setEditable(true);
         textField.setSize(500,100);
         textField.requestFocusInWindow();
-        textField.setText("FUCK THIS LANGUAGE");
 
         submit.setSize(100,100);
         dialog.add(submit);
