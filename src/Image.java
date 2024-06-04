@@ -1,5 +1,6 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.File;
@@ -7,26 +8,28 @@ import java.io.File;
 public class Image {
     private static BufferedImage origImage;
 
-    public static Pair<JLabel, BufferedImage> ParseImageF(JLabel lbl, String path, String image, int x, int y) throws IOException {
-        path = path + "\\" + image; //remove \\ for linux
-        BufferedImage img = ImageIO.read(new File(path));
+    public static Pair<JLabel, BufferedImage> ParseImageF(JLabel lbl, String image, int x, int y) throws IOException {
+        File imageF = new File(image);
+        BufferedImage img = ImageIO.read(imageF);
         int newWidth = img.getWidth();
         int newHeight = img.getHeight();
         double multiplier = 1;
-        if (img.getWidth() > x || img.getHeight() > y) {
-            if (x / img.getWidth() < y / img.getHeight()) {
-                multiplier = (double) x / img.getWidth();
+        int bx = x;
+        int by = y-100;
+        if (img.getWidth() > bx || img.getHeight() > by) {
+            if (bx / img.getWidth() < by / img.getHeight()) {
+                multiplier = (double) bx / img.getWidth();
             } else {
-                multiplier = (double) y / img.getHeight();
+                multiplier = (double) by / img.getHeight();
             }
             multiplier -= 0.04;
             newWidth = (int) (newWidth * multiplier);
             newHeight = (int) (newHeight * multiplier);
-        } else if (img.getWidth() < x || img.getHeight() < y) {
-            if (x / img.getWidth() < y / img.getHeight()) {
-                multiplier = (double) x / img.getWidth();
+        } else if (img.getWidth() < bx || img.getHeight() < by) {
+            if (bx / img.getWidth() < by / img.getHeight()) {
+                multiplier = (double) bx / img.getWidth();
             } else {
-                multiplier = (double) y / img.getHeight();
+                multiplier = (double) by / img.getHeight();
             }
             multiplier -= 0.1;
             newWidth = (int) (newWidth * multiplier);
@@ -37,7 +40,12 @@ public class Image {
         origImage = img;
         ImageIcon icon = new ImageIcon(img);
         lbl.setIcon(icon);
+        lbl.setText(imageF.getName());
+        lbl.setHorizontalTextPosition(SwingConstants.CENTER);
+        lbl.setVerticalTextPosition(SwingConstants.BOTTOM);
         lbl.setSize(newWidth, newHeight);
+        lbl.setHorizontalAlignment(SwingConstants.CENTER);
+        lbl.setVerticalAlignment(SwingConstants.CENTER);
         return new Pair<>(lbl, img);
     }
 
