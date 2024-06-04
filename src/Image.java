@@ -1,6 +1,5 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.File;
@@ -8,12 +7,12 @@ import java.io.File;
 public class Image {
     private static BufferedImage origImage;
 
-    public static Pair<JLabel, BufferedImage> ParseImageF(JLabel lbl, String image, int x, int y) throws IOException {
+    public static Triple<JLabel, BufferedImage, JLabel> ParseImageF(JLabel lbl, String image, int x, int y) throws IOException {
         File imageF = new File(image);
         BufferedImage img = ImageIO.read(imageF);
         int newWidth = img.getWidth();
         int newHeight = img.getHeight();
-        double multiplier = 1;
+        double multiplier;
         int bx = x;
         int by = y-100;
         if (img.getWidth() > bx || img.getHeight() > by) {
@@ -40,16 +39,18 @@ public class Image {
         origImage = img;
         ImageIcon icon = new ImageIcon(img);
         lbl.setIcon(icon);
-        lbl.setText(imageF.getName());
-        lbl.setHorizontalTextPosition(SwingConstants.CENTER);
-        lbl.setVerticalTextPosition(SwingConstants.BOTTOM);
+        JLabel text = new JLabel(imageF.getName());
+        text.setHorizontalTextPosition(SwingConstants.CENTER);
+        text.setVerticalTextPosition(SwingConstants.CENTER);
+        text.setHorizontalAlignment(SwingConstants.CENTER);
+        text.setVerticalAlignment(SwingConstants.CENTER);
         lbl.setSize(newWidth, newHeight);
         lbl.setHorizontalAlignment(SwingConstants.CENTER);
         lbl.setVerticalAlignment(SwingConstants.CENTER);
-        return new Pair<>(lbl, img);
+        return new Triple<>(lbl, img, text);
     }
 
-    public static Pair<JLabel, BufferedImage> reScale(String mode, Pair<JLabel, BufferedImage> img) throws IOException {
+    public static Triple<JLabel, BufferedImage, JLabel> reScale(String mode, Triple<JLabel, BufferedImage, JLabel> img) {
         int newWidth = img.second.getWidth();
         int newHeight = img.second.getHeight();
         double multiplier = 1.2;
