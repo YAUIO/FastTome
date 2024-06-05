@@ -6,19 +6,19 @@ import java.util.List;
 
 public class Main {
     static JMenuBar jMenuBar;
+    static JFrame curFrame;
     static int i = 0;
 
     public static void main(String[] args) throws Exception {
         Menu.directory = "D:\\Users\\User\\Pictures\\Avka"; //add / for linux
         int x = 1280;
         int y = 720;
-
+        curFrame = new JFrame("FastTome");
         List<File> pictures = FileReader.getFiles(Menu.directory);
         int prevI = 0;
         boolean display = true;
         boolean init = true;
         KeyListenerMenu keyListenerMenu = new KeyListenerMenu();
-        JFrame curFrame = new JFrame("FastTome");
         JScrollPane firstView = new JScrollPane();
         Triple<JLabel, BufferedImage, JLabel> label = new Triple<>(new JLabel(), new BufferedImage(x,y,BufferedImage.TYPE_INT_RGB), new JLabel());
         curFrame.setSize(x, y);
@@ -127,8 +127,18 @@ public class Main {
                 }
             }
 
+            if(!Menu.rename.equals("none")){
+                Pair<Boolean, File> r = FileReader.rename(pictures.get(i));
+                pictures.set(i,r.second);
+                if(!r.first){
+                    JOptionPane.showMessageDialog(curFrame, "File exists",
+                            "I/O error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
 
-            curFrame.requestFocus();
+            if(curFrame.hasFocus()){
+                curFrame.requestFocus();
+            }
             curKey = KeyListenerMenu.key;
         }
     }

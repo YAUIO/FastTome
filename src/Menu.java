@@ -1,9 +1,13 @@
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.File;
 import java.util.List;
 
 public class Menu{
     static String directory = "none";
+    static String rename = "none";
     static int view = 0;
     static boolean viewChanged = true;
     static JCheckBoxMenuItem view0 = new JCheckBoxMenuItem("Image",true);
@@ -50,11 +54,13 @@ public class Menu{
 
         jMenuItem.addActionListener(e -> Menu.openDirDialog());
 
-        jMenuItem1.addActionListener(e -> System.out.println("open"));
+        jMenuItem1.addActionListener(e -> Menu.openRenameDial()); //rename
 
-        jMenuItem2.addActionListener(e -> System.out.println("open"));
+        jMenuItem2.addActionListener(e -> Menu.writeTagToFile()); //add tag
 
-        jMenuItem3.addActionListener(e -> System.out.println("open"));
+        jMenuItem3.addActionListener(e -> System.out.println("open")); //add to collection
+
+        jMenuItem3.addActionListener(e -> System.out.println("open")); //sample collection
 
         jMenuBar.add(jMenu);
         jMenuBar.add(jMenu1);
@@ -96,5 +102,85 @@ public class Menu{
         jFileChooser.showOpenDialog(dialog);
 
         jFileChooser.setVisible(true);
+    }
+
+    public static void openRenameDial(){
+        JDialog dial = new JDialog(Main.curFrame);
+        JLabel l = new JLabel("Type in new name (with .ext)");
+        l.setHorizontalTextPosition(SwingConstants.CENTER);
+        l.setVerticalTextPosition(SwingConstants.CENTER);
+        l.setHorizontalAlignment(SwingConstants.CENTER);
+        l.setVerticalAlignment(SwingConstants.CENTER);
+        dial.add(l, BorderLayout.NORTH);
+
+        JTextArea jt = new JTextArea();
+        jt.setPreferredSize(new Dimension(100,80));
+        jt.setEditable(true);
+        dial.add(jt,BorderLayout.CENTER);
+
+        jt.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if(e.getKeyCode() == KeyEvent.VK_ENTER){
+                    rename = jt.getText();
+                    jt.setText("");
+                    dial.dispose();
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+        });
+
+        dial.setSize(new Dimension(200,80));
+        dial.setPreferredSize(new Dimension(200,80));
+        dial.pack();
+        dial.setVisible(true);
+    }
+
+    public static void writeTagToFile(){
+        JDialog dial = new JDialog(Main.curFrame);
+        JLabel l = new JLabel("Type in new name (with .ext)");
+        l.setHorizontalTextPosition(SwingConstants.CENTER);
+        l.setVerticalTextPosition(SwingConstants.CENTER);
+        l.setHorizontalAlignment(SwingConstants.CENTER);
+        l.setVerticalAlignment(SwingConstants.CENTER);
+        dial.add(l, BorderLayout.NORTH);
+
+        JTextArea jt = new JTextArea();
+        jt.setPreferredSize(new Dimension(100,80));
+        jt.setEditable(true);
+        dial.add(jt,BorderLayout.CENTER);
+
+        jt.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if(e.getKeyCode() == KeyEvent.VK_ENTER){
+                    rename = jt.getText();
+                    jt.setText("");
+                    dial.dispose();
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+        });
+
+        dial.setSize(new Dimension(200,80));
+        dial.setPreferredSize(new Dimension(200,80));
+        dial.pack();
+        dial.setVisible(true);
     }
 }

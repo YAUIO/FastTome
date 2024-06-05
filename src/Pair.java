@@ -6,4 +6,7 @@ public class Pair <T,V>{
         this.first = first;
         this.second = second;
     }
+
+    public Pair (){
+    }
 }
