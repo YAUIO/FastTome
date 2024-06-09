@@ -86,6 +86,8 @@ public class Menu {
             jd.requestFocus();
         });
 
+        jMenuItem22.addActionListener(e -> {}); //todo make remove tags
+
         jMenuItem3.addActionListener(e -> System.out.println("open")); //add to collection
 
         jMenuItem3.addActionListener(e -> System.out.println("open")); //sample collection

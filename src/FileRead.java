@@ -76,8 +76,19 @@ public class FileRead {
         try {
             BufferedReader bc = new BufferedReader(new FileReader("src\\.ftcollections"));
             String buf;
+            ArrayList<String> ab;
+            int i,c;
             while (bc.ready()){
+                ab = new ArrayList<>();
                 buf = bc.readLine();
+                i = buf.indexOf("Collections:") + 5;
+                c = i;
+                while (c != buf.length()-1){
+                    i = c+1;
+                    c = buf.indexOf(" ",c+1);
+                    ab.add(buf.substring(i,c));
+                }
+                tags.put(buf.substring(0,buf.indexOf(" ")),ab);
             }
             bc.close();
         }catch (IOException e){
