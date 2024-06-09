@@ -6,6 +6,7 @@ import java.io.File;
 
 public class Image {
     private static BufferedImage origImage;
+    static File curImage;
 
     public static Triple<JLabel, BufferedImage, JLabel> ParseImageF(JLabel lbl, String image, int x, int y) throws IOException {
         File imageF = new File(image);
@@ -36,6 +37,7 @@ public class Image {
         }
 
         img = org.imgscalr.Scalr.resize(img, org.imgscalr.Scalr.Method.BALANCED, newWidth, newHeight); //https://github.com/rkalla/imgscalr
+        curImage = imageF;
         origImage = img;
         ImageIcon icon = new ImageIcon(img);
         lbl.setIcon(icon);

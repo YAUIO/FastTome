@@ -7,6 +7,7 @@ import java.util.List;
 public class Main {
     static JMenuBar jMenuBar;
     static JFrame curFrame;
+    static String curPath;
     static int i = 0;
 
     public static void main(String[] args) throws Exception {
@@ -14,7 +15,7 @@ public class Main {
         int x = 1280;
         int y = 720;
         curFrame = new JFrame("FastTome");
-        List<File> pictures = FileReader.getFiles(Menu.directory);
+        List<File> pictures = FileRead.getFiles(Menu.directory);
         int prevI = 0;
         boolean display = true;
         boolean init = true;
@@ -42,7 +43,8 @@ public class Main {
             if(!Menu.directory.equals("none") || Menu.viewChanged){
 
                 if(!Menu.directory.equals("none")){
-                    pictures = FileReader.getFiles(Menu.directory);
+                    pictures = FileRead.getFiles(Menu.directory);
+                    curPath = Menu.directory;
                     curFrame.remove(label.third);
                     Menu.directory = "none";
                     i = 0;
@@ -128,7 +130,7 @@ public class Main {
             }
 
             if(!Menu.rename.equals("none")){
-                Pair<Boolean, File> r = FileReader.rename(pictures.get(i));
+                Pair<Boolean, File> r = FileRead.rename(pictures.get(i));
                 pictures.set(i,r.second);
                 if(!r.first){
                     JOptionPane.showMessageDialog(curFrame, "File exists",

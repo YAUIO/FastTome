@@ -2,18 +2,19 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.File;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 
-public class Menu{
+public class Menu {
     static String directory = "none";
     static String rename = "none";
     static int view = 0;
     static boolean viewChanged = true;
-    static JCheckBoxMenuItem view0 = new JCheckBoxMenuItem("Image",true);
+    static JCheckBoxMenuItem view0 = new JCheckBoxMenuItem("Image", true);
     static JCheckBoxMenuItem view1 = new JCheckBoxMenuItem("List");
 
-    public static JMenuBar getMenu(){
+    public static JMenuBar getMenu() {
         JMenuBar jMenuBar = new JMenuBar();
 
         JMenu jMenu = new JMenu("View");
@@ -71,11 +72,11 @@ public class Menu{
         return jMenuBar;
     }
 
-    public static JScrollPane getFirstView(List<File> l){
+    public static JScrollPane getFirstView(List<File> l) {
         String[] arr = new String[l.size()];
         int i = 0;
-        while (i<l.size()){
-            arr[i]=l.get(i).getName();
+        while (i < l.size()) {
+            arr[i] = l.get(i).getName();
             i++;
         }
         JList<String> list = new JList<>(arr);
@@ -86,16 +87,16 @@ public class Menu{
         return scrollPane;
     }
 
-    public static void openDirDialog(){
+    public static void openDirDialog() {
         JFileChooser jFileChooser = new JFileChooser();
         jFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         jFileChooser.addActionListener(e -> {
-            if (e.getActionCommand().equals("ApproveSelection")){
+            if (e.getActionCommand().equals("ApproveSelection")) {
                 directory = jFileChooser.getSelectedFile().toString();
             }
         });
 
-        jFileChooser.setSize(400,400);
+        jFileChooser.setSize(400, 400);
 
         JDialog dialog = new JDialog();
 
@@ -104,7 +105,7 @@ public class Menu{
         jFileChooser.setVisible(true);
     }
 
-    public static void openRenameDial(){
+    public static void openRenameDial() {
         JDialog dial = new JDialog(Main.curFrame);
         JLabel l = new JLabel("Type in new name (with .ext)");
         l.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -114,9 +115,9 @@ public class Menu{
         dial.add(l, BorderLayout.NORTH);
 
         JTextArea jt = new JTextArea();
-        jt.setPreferredSize(new Dimension(100,80));
+        jt.setPreferredSize(new Dimension(100, 80));
         jt.setEditable(true);
-        dial.add(jt,BorderLayout.CENTER);
+        dial.add(jt, BorderLayout.CENTER);
 
         jt.addKeyListener(new KeyListener() {
             @Override
@@ -125,7 +126,7 @@ public class Menu{
 
             @Override
             public void keyPressed(KeyEvent e) {
-                if(e.getKeyCode() == KeyEvent.VK_ENTER){
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     rename = jt.getText();
                     jt.setText("");
                     dial.dispose();
@@ -138,15 +139,15 @@ public class Menu{
             }
         });
 
-        dial.setSize(new Dimension(200,80));
-        dial.setPreferredSize(new Dimension(200,80));
+        dial.setSize(new Dimension(200, 80));
+        dial.setPreferredSize(new Dimension(200, 80));
         dial.pack();
         dial.setVisible(true);
     }
 
-    public static void writeTagToFile(){
+    public static void writeTagToFile() {
         JDialog dial = new JDialog(Main.curFrame);
-        JLabel l = new JLabel("Type in new name (with .ext)");
+        JLabel l = new JLabel("Type in new tag");
         l.setHorizontalTextPosition(SwingConstants.CENTER);
         l.setVerticalTextPosition(SwingConstants.CENTER);
         l.setHorizontalAlignment(SwingConstants.CENTER);
@@ -154,9 +155,9 @@ public class Menu{
         dial.add(l, BorderLayout.NORTH);
 
         JTextArea jt = new JTextArea();
-        jt.setPreferredSize(new Dimension(100,80));
+        jt.setPreferredSize(new Dimension(100, 80));
         jt.setEditable(true);
-        dial.add(jt,BorderLayout.CENTER);
+        dial.add(jt, BorderLayout.CENTER);
 
         jt.addKeyListener(new KeyListener() {
             @Override
@@ -165,10 +166,60 @@ public class Menu{
 
             @Override
             public void keyPressed(KeyEvent e) {
-                if(e.getKeyCode() == KeyEvent.VK_ENTER){
-                    rename = jt.getText();
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    String tag = jt.getText();
                     jt.setText("");
                     dial.dispose();
+
+                    boolean isRecord = FileRead.imgData.first.containsKey(Image.curImage.getName());
+                    boolean isTag = false;
+                    if (isRecord) {
+                        isTag = FileRead.imgData.first.get(Image.curImage.getName()).contains(tag);
+                    }
+
+                    try {
+                        if (!isTag && !isRecord) {
+                            BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedata",true));
+                            if (!FileRead.imgData.first.isEmpty()) {
+                                bw.append('\n');
+                            }
+                            bw.append(Image.curImage.getName()).append(" Tags: ");
+                            bw.append(tag);
+                            bw.append(' ');
+                            ArrayList<String> tags = new ArrayList<>();
+                            tags.add(tag);
+                            FileRead.imgData.first.put(Image.curImage.getName(),tags);
+                            bw.close();
+                        }else if(!isTag){
+                            BufferedReader br = new BufferedReader(new FileReader(Main.curPath + "\\.fasttomedata"));
+                            ArrayList<String> file = new ArrayList<>();
+                            int i = -1;
+                            while (br.ready()){
+                                file.add(br.readLine());
+                                System.out.println(file.get(file.size()-1));
+                                if(file.get(file.size()-1).startsWith(Image.curImage.getName())){
+                                    i = file.size()-1;
+                                }
+                            }
+                            br.close();
+                            file.set(i,file.get(i) + tag + " ");
+
+                            BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedata"));
+
+                            bw.write("");
+
+                            for (String s : file){
+                                bw.append(s);
+                                bw.append('\n');
+                            }
+
+                            bw.close();
+                        }
+
+                        FileRead.imgData.first.get(Image.curImage.getName()).add(tag);
+                    } catch (IOException ex) {
+                        System.out.println(ex.getStackTrace());
+                    }
                 }
             }
 
@@ -178,8 +229,8 @@ public class Menu{
             }
         });
 
-        dial.setSize(new Dimension(200,80));
-        dial.setPreferredSize(new Dimension(200,80));
+        dial.setSize(new Dimension(200, 80));
+        dial.setPreferredSize(new Dimension(200, 80));
         dial.pack();
         dial.setVisible(true);
     }
