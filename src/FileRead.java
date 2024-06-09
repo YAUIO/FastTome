@@ -63,7 +63,6 @@ public class FileRead {
                 while (c != buf.length()-1){
                     i = c+1;
                     c = buf.indexOf(" ",c+1);
-                    System.out.println(buf.substring(i,c));
                     ab.add(buf.substring(i,c));
                 }
                 tags.put(buf.substring(0,buf.indexOf(" ")),ab);

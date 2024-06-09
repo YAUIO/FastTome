@@ -20,7 +20,7 @@ public class Menu {
         JMenu jMenu = new JMenu("View");
         JMenu jMenu1 = new JMenu("Open new directory");
         JMenu jMenu2 = new JMenu("Rename");
-        JMenu jMenu3 = new JMenu("Add tag");
+        JMenu jMenu3 = new JMenu("Tags");
         JMenu jMenu4 = new JMenu("Collections");
 
 
@@ -44,12 +44,16 @@ public class Menu {
         JMenuItem jMenuItem = new JMenuItem("Open");
         JMenuItem jMenuItem1 = new JMenuItem("Rename");
         JMenuItem jMenuItem2 = new JMenuItem("Add");
+        JMenuItem jMenuItem21 = new JMenuItem("View");
+        JMenuItem jMenuItem22 = new JMenuItem("Remove");
         JMenu jMenuItem3 = new JMenu("Add to collection");
         JMenuItem jMenuItem4 = new JMenuItem("Sample Collection");
 
         jMenu1.add(jMenuItem);
         jMenu2.add(jMenuItem1);
         jMenu3.add(jMenuItem2);
+        jMenu3.add(jMenuItem21);
+        jMenu3.add(jMenuItem22);
         jMenu4.add(jMenuItem3);
         jMenu4.add(jMenuItem4);
 
@@ -58,6 +62,29 @@ public class Menu {
         jMenuItem1.addActionListener(e -> Menu.openRenameDial()); //rename
 
         jMenuItem2.addActionListener(e -> Menu.writeTagToFile()); //add tag
+
+        jMenuItem21.addActionListener(e -> {
+            JDialog jd = new JDialog(Main.curFrame);
+            String[] arr = new String[1];
+            arr[0] = "none";
+            if(FileRead.imgData.first.get(Image.curImage.getName())!=null){
+                arr = new String[FileRead.imgData.first.get(Image.curImage.getName()).size()];
+                int i = 0;
+                for (String tag : FileRead.imgData.first.get(Image.curImage.getName())) {
+                    arr[i] = tag;
+                    i++;
+                }
+            }
+            JList<String> l = new JList<>(arr);
+            JScrollPane scrollPane = new JScrollPane();
+            scrollPane.setViewportView(l);
+            l.setLayoutOrientation(JList.VERTICAL);
+            jd.add(scrollPane);
+            jd.setSize(new Dimension(200,40+20*arr.length));
+            jd.setPreferredSize(new Dimension(200,40+20*arr.length));
+            jd.setVisible(true);
+            jd.requestFocus();
+        });
 
         jMenuItem3.addActionListener(e -> System.out.println("open")); //add to collection
 
@@ -147,7 +174,7 @@ public class Menu {
 
     public static void writeTagToFile() {
         JDialog dial = new JDialog(Main.curFrame);
-        JLabel l = new JLabel("Type in new tag");
+        JLabel l = new JLabel("Type in new tag (no whitespaces)");
         l.setHorizontalTextPosition(SwingConstants.CENTER);
         l.setVerticalTextPosition(SwingConstants.CENTER);
         l.setHorizontalAlignment(SwingConstants.CENTER);
@@ -155,7 +182,7 @@ public class Menu {
         dial.add(l, BorderLayout.NORTH);
 
         JTextArea jt = new JTextArea();
-        jt.setPreferredSize(new Dimension(100, 80));
+        jt.setPreferredSize(new Dimension(260, 80));
         jt.setEditable(true);
         dial.add(jt, BorderLayout.CENTER);
 
@@ -179,7 +206,7 @@ public class Menu {
 
                     try {
                         if (!isTag && !isRecord) {
-                            BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedata",true));
+                            BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedata", true));
                             if (!FileRead.imgData.first.isEmpty()) {
                                 bw.append('\n');
                             }
@@ -188,27 +215,27 @@ public class Menu {
                             bw.append(' ');
                             ArrayList<String> tags = new ArrayList<>();
                             tags.add(tag);
-                            FileRead.imgData.first.put(Image.curImage.getName(),tags);
+                            FileRead.imgData.first.put(Image.curImage.getName(), tags);
                             bw.close();
-                        }else if(!isTag){
+                        } else if (!isTag) {
                             BufferedReader br = new BufferedReader(new FileReader(Main.curPath + "\\.fasttomedata"));
                             ArrayList<String> file = new ArrayList<>();
                             int i = -1;
-                            while (br.ready()){
+                            while (br.ready()) {
                                 file.add(br.readLine());
-                                System.out.println(file.get(file.size()-1));
-                                if(file.get(file.size()-1).startsWith(Image.curImage.getName())){
-                                    i = file.size()-1;
+                                System.out.println(file.get(file.size() - 1));
+                                if (file.get(file.size() - 1).startsWith(Image.curImage.getName())) {
+                                    i = file.size() - 1;
                                 }
                             }
                             br.close();
-                            file.set(i,file.get(i) + tag + " ");
+                            file.set(i, file.get(i) + tag + " ");
 
                             BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedata"));
 
                             bw.write("");
 
-                            for (String s : file){
+                            for (String s : file) {
                                 bw.append(s);
                                 bw.append('\n');
                             }
@@ -229,8 +256,8 @@ public class Menu {
             }
         });
 
-        dial.setSize(new Dimension(200, 80));
-        dial.setPreferredSize(new Dimension(200, 80));
+        dial.setSize(new Dimension(260, 80));
+        dial.setPreferredSize(new Dimension(260, 80));
         dial.pack();
         dial.setVisible(true);
     }
