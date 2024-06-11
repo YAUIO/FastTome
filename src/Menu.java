@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -67,7 +69,7 @@ public class Menu {
             JDialog jd = new JDialog(Main.curFrame);
             String[] arr = new String[1];
             arr[0] = "none";
-            if(FileRead.imgData.first.get(Image.curImage.getName())!=null){
+            if (FileRead.imgData.first.get(Image.curImage.getName()) != null && !FileRead.imgData.first.get(Image.curImage.getName()).isEmpty()) {
                 arr = new String[FileRead.imgData.first.get(Image.curImage.getName()).size()];
                 int i = 0;
                 for (String tag : FileRead.imgData.first.get(Image.curImage.getName())) {
@@ -80,13 +82,87 @@ public class Menu {
             scrollPane.setViewportView(l);
             l.setLayoutOrientation(JList.VERTICAL);
             jd.add(scrollPane);
-            jd.setSize(new Dimension(200,40+20*arr.length));
-            jd.setPreferredSize(new Dimension(200,40+20*arr.length));
+            jd.setSize(new Dimension(200, 40 + 20 * arr.length));
+            jd.setPreferredSize(new Dimension(200, 40 + 20 * arr.length));
             jd.setVisible(true);
             jd.requestFocus();
         });
 
-        jMenuItem22.addActionListener(e -> {}); //todo make remove tags
+        jMenuItem22.addActionListener(e -> {
+            JDialog jd = new JDialog(Main.curFrame);
+            String[] arr = new String[1];
+            arr[0] = "none";
+            if (FileRead.imgData.first.get(Image.curImage.getName()) != null) {
+                arr = new String[FileRead.imgData.first.get(Image.curImage.getName()).size()];
+                int i = 0;
+                for (String tag : FileRead.imgData.first.get(Image.curImage.getName())) {
+                    arr[i] = tag;
+                    i++;
+                }
+            }
+            JList<String> l = new JList<>(arr);
+
+            l.addListSelectionListener(e1 -> {
+                if (!l.getSelectedValue().equals("none")) {
+                    try {
+                        String tag = l.getSelectedValue();
+                        jd.dispose();
+                        BufferedReader br = new BufferedReader(new FileReader(Main.curPath + "\\.fasttomedata"));
+                        ArrayList<String> file = new ArrayList<>();
+                        int i = -1;
+                        while (br.ready()) {
+                            file.add(br.readLine());
+                            if (file.get(file.size() - 1).startsWith(Image.curImage.getName())) {
+                                i = file.size() - 1;
+                            }
+                        }
+                        br.close();
+
+                        if (i != -1) {
+                            int pos = file.get(i).lastIndexOf(tag);
+
+                            if (pos != -1) {
+
+                                FileRead.imgData.first.get(Image.curImage.getName()).remove(tag);
+
+                                if(!FileRead.imgData.first.get(Image.curImage.getName()).isEmpty()){
+                                    file.set(i, file.get(i).substring(0, pos - 1) + file.get(i).substring(pos + tag.length()));
+                                }else{
+                                    file.remove(i);
+                                }
+
+
+                                BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedata"));
+
+                                bw.write("");
+
+                                for (String s : file) {
+                                    if(!s.isEmpty()){
+                                        bw.append(s);
+                                        bw.append('\n');
+                                    }
+                                }
+
+                                bw.close();
+                            }
+
+                        }
+
+                    } catch (IOException ex) {
+                        //System.out.println(ex.getMessage());
+                    }
+                }
+            });
+
+            JScrollPane scrollPane = new JScrollPane();
+            scrollPane.setViewportView(l);
+            l.setLayoutOrientation(JList.VERTICAL);
+            jd.add(scrollPane);
+            jd.setSize(new Dimension(200, 40 + 20 * arr.length));
+            jd.setPreferredSize(new Dimension(200, 40 + 20 * arr.length));
+            jd.setVisible(true);
+            jd.requestFocus();
+        });
 
         jMenuItem3.addActionListener(e -> System.out.println("open")); //add to collection
 
@@ -225,27 +301,31 @@ public class Menu {
                             int i = -1;
                             while (br.ready()) {
                                 file.add(br.readLine());
-                                System.out.println(file.get(file.size() - 1));
                                 if (file.get(file.size() - 1).startsWith(Image.curImage.getName())) {
                                     i = file.size() - 1;
                                 }
                             }
                             br.close();
-                            file.set(i, file.get(i) + tag + " ");
+                            if (i != -1) {
+                                file.set(i, file.get(i) + tag + " ");
 
-                            BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedata"));
+                                BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedata"));
 
-                            bw.write("");
+                                bw.write("");
 
-                            for (String s : file) {
-                                bw.append(s);
-                                bw.append('\n');
+                                for (String s : file) {
+                                    if(!s.isEmpty() && !s.equals(" ")){
+                                        bw.append(s);
+                                        bw.append('\n');
+                                    }
+                                }
+
+                                bw.close();
+
+                                FileRead.imgData.first.get(Image.curImage.getName()).add(tag);
                             }
-
-                            bw.close();
                         }
 
-                        FileRead.imgData.first.get(Image.curImage.getName()).add(tag);
                     } catch (IOException ex) {
                         System.out.println(ex.getStackTrace());
                     }
