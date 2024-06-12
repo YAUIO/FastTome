@@ -129,6 +129,7 @@ public class Menu {
                                     file.set(i, file.get(i).substring(0, pos - 1) + file.get(i).substring(pos + tag.length()));
                                 }else{
                                     file.remove(i);
+                                    FileRead.imgData.first.remove(Image.curImage.getName());
                                 }
 
 
@@ -136,11 +137,16 @@ public class Menu {
 
                                 bw.write("");
 
-                                for (String s : file) {
-                                    if(!s.isEmpty()){
-                                        bw.append(s);
+                                i = 0;
+
+                                while(i<file.size()) {
+                                    if(!file.get(i).isEmpty()) {
+                                        bw.append(file.get(i));
+                                    }
+                                    if(i+1<file.size() && !file.get(i+1).isEmpty()){
                                         bw.append('\n');
                                     }
+                                    i++;
                                 }
 
                                 bw.close();

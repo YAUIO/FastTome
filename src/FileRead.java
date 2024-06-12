@@ -67,7 +67,6 @@ public class FileRead {
                 }
                 tags.put(buf.substring(0,buf.indexOf(" ")),ab);
             }
-            System.out.println(tags);
             br.close();
         }catch (IOException e){
             System.out.println(e.getStackTrace() + " Metadata file wasn't found");
