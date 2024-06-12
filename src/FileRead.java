@@ -85,7 +85,7 @@ public class FileRead {
                     c = buf.indexOf(" ", c + 1);
                     ab.add(buf.substring(i, c));
                 }
-                tags.put(buf.substring(0, buf.indexOf(" ")), ab);
+                collections.put(buf.substring(0, buf.indexOf(" ")), ab);
             }
             bc.close();
         } catch (IOException e) {
