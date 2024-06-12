@@ -6,7 +6,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Menu {
     static String directory = "none";
@@ -48,7 +50,7 @@ public class Menu {
         JMenuItem jMenuItem2 = new JMenuItem("Add");
         JMenuItem jMenuItem21 = new JMenuItem("View");
         JMenuItem jMenuItem22 = new JMenuItem("Remove");
-        JMenu jMenuItem3 = new JMenu("Add to collection");
+        JMenuItem jMenuItem3 = new JMenuItem("Add to collection");
         JMenuItem jMenuItem4 = new JMenuItem("Sample Collection");
 
         jMenu1.add(jMenuItem);
@@ -59,19 +61,19 @@ public class Menu {
         jMenu4.add(jMenuItem3);
         jMenu4.add(jMenuItem4);
 
-        jMenuItem.addActionListener(e -> Menu.openDirDialog());
+        jMenuItem.addActionListener(e -> Menu.openDirDialog()); //change directory
 
         jMenuItem1.addActionListener(e -> Menu.openRenameDial()); //rename
 
         jMenuItem2.addActionListener(e -> Menu.writeTagToFile()); //add tag
 
-        jMenuItem21.addActionListener(e -> viewTagDial());
+        jMenuItem21.addActionListener(e -> viewTagDial()); //view tags
 
-        jMenuItem22.addActionListener(e -> removeTagDial());
+        jMenuItem22.addActionListener(e -> removeTagDial()); //remove a tag
 
-        jMenuItem3.addActionListener(e -> System.out.println("open")); //add to collection
+        jMenuItem3.addActionListener(e -> addToCollection()); //add to collection
 
-        jMenuItem3.addActionListener(e -> System.out.println("open")); //sample collection
+        jMenuItem4.addActionListener(e -> System.out.println("open")); //sample collection
 
         jMenuBar.add(jMenu);
         jMenuBar.add(jMenu1);
@@ -80,6 +82,75 @@ public class Menu {
         jMenuBar.add(jMenu4);
 
         return jMenuBar;
+    }
+
+    public static void addToCollection() {
+        JDialog jd = new JDialog(Main.curFrame);
+        String[] arr = new String[1];
+        arr[0] = "New collection";
+
+        try {
+            BufferedReader bc = new BufferedReader(new FileReader("src\\.ftcollections"));
+            String buf;
+            HashSet<String> coll = new HashSet<>();
+            ArrayList<String> ab;
+            int i, c;
+            while (bc.ready()) {
+                buf = bc.readLine();
+                i = buf.indexOf("Collections:") + 5;
+                c = i;
+                while (c != buf.length() - 1) {
+                    i = c + 1;
+                    c = buf.indexOf(" ", c + 1);
+                    coll.add(buf.substring(i, c));
+                }
+            }
+            bc.close();
+
+            for(String s : coll) {
+                if ((FileRead.imgData.second.get(Image.curImage.getAbsolutePath()) != null && !FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).isEmpty())) {
+                    if (FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).contains(s)) {
+                        coll.remove(s);
+                    }
+                }
+            }
+
+            arr = new String[coll.size()];
+
+            arr[0] = "New collection";
+
+            i = 1;
+
+            for (String s : coll) {
+                arr[i] = s;
+                i++;
+            }
+
+        } catch (IOException e) {
+            System.out.println(e.getStackTrace() + " Collections file wasn't found");
+        }
+
+        JList<String> l = new JList<>(arr);
+        l.addListSelectionListener(e -> {
+            if (l.getSelectedIndex() == 0) {
+                jd.dispose();
+                openNewCollectionDial();
+            } else {
+
+            }
+        });
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setViewportView(l);
+        l.setLayoutOrientation(JList.VERTICAL);
+        jd.add(scrollPane);
+        jd.setSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setPreferredSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setVisible(true);
+        jd.requestFocus();
+    }
+
+    public static void openNewCollectionDial() {
+
     }
 
     public static void viewTagDial() {
