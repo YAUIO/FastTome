@@ -92,8 +92,7 @@ public class FileRead {
             System.out.println(e.getStackTrace() + " Collections file wasn't found");
         }
 
-        Pair<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>> p = new Pair<>(tags, collections);
-        return p;
+        return new Pair<>(tags, collections);
     }
 
     public static Pair<Boolean, File> rename(File a) {
