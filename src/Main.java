@@ -131,7 +131,8 @@ public class Main {
 
             if(!Menu.rename.equals("none")){
                 Pair<Boolean, File> r = FileRead.rename(pictures.get(i));
-                pictures.set(i,r.second); //todo add func for proper interaction with tags
+                pictures.set(i,r.second);
+                label.third.setText(r.second.getName());
                 if(!r.first){
                     JOptionPane.showMessageDialog(curFrame, "File exists",
                             "I/O error", JOptionPane.ERROR_MESSAGE);

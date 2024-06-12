@@ -65,110 +65,9 @@ public class Menu {
 
         jMenuItem2.addActionListener(e -> Menu.writeTagToFile()); //add tag
 
-        jMenuItem21.addActionListener(e -> {
-            JDialog jd = new JDialog(Main.curFrame);
-            String[] arr = new String[1];
-            arr[0] = "none";
-            if (FileRead.imgData.first.get(Image.curImage.getName()) != null && !FileRead.imgData.first.get(Image.curImage.getName()).isEmpty()) {
-                arr = new String[FileRead.imgData.first.get(Image.curImage.getName()).size()];
-                int i = 0;
-                for (String tag : FileRead.imgData.first.get(Image.curImage.getName())) {
-                    arr[i] = tag;
-                    i++;
-                }
-            }
-            JList<String> l = new JList<>(arr);
-            JScrollPane scrollPane = new JScrollPane();
-            scrollPane.setViewportView(l);
-            l.setLayoutOrientation(JList.VERTICAL);
-            jd.add(scrollPane);
-            jd.setSize(new Dimension(200, 40 + 20 * arr.length));
-            jd.setPreferredSize(new Dimension(200, 40 + 20 * arr.length));
-            jd.setVisible(true);
-            jd.requestFocus();
-        });
+        jMenuItem21.addActionListener(e -> viewTagDial());
 
-        jMenuItem22.addActionListener(e -> {
-            JDialog jd = new JDialog(Main.curFrame);
-            String[] arr = new String[1];
-            arr[0] = "none";
-            if (FileRead.imgData.first.get(Image.curImage.getName()) != null) {
-                arr = new String[FileRead.imgData.first.get(Image.curImage.getName()).size()];
-                int i = 0;
-                for (String tag : FileRead.imgData.first.get(Image.curImage.getName())) {
-                    arr[i] = tag;
-                    i++;
-                }
-            }
-            JList<String> l = new JList<>(arr);
-
-            l.addListSelectionListener(e1 -> {
-                if (!l.getSelectedValue().equals("none")) {
-                    try {
-                        String tag = l.getSelectedValue();
-                        jd.dispose();
-                        BufferedReader br = new BufferedReader(new FileReader(Main.curPath + "\\.fasttomedata"));
-                        ArrayList<String> file = new ArrayList<>();
-                        int i = -1;
-                        while (br.ready()) {
-                            file.add(br.readLine());
-                            if (file.get(file.size() - 1).startsWith(Image.curImage.getName())) {
-                                i = file.size() - 1;
-                            }
-                        }
-                        br.close();
-
-                        if (i != -1) {
-                            int pos = file.get(i).lastIndexOf(tag);
-
-                            if (pos != -1) {
-
-                                FileRead.imgData.first.get(Image.curImage.getName()).remove(tag);
-
-                                if(!FileRead.imgData.first.get(Image.curImage.getName()).isEmpty()){
-                                    file.set(i, file.get(i).substring(0, pos - 1) + file.get(i).substring(pos + tag.length()));
-                                }else{
-                                    file.remove(i);
-                                    FileRead.imgData.first.remove(Image.curImage.getName());
-                                }
-
-
-                                BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedata"));
-
-                                bw.write("");
-
-                                i = 0;
-
-                                while(i<file.size()) {
-                                    if(!file.get(i).isEmpty()) {
-                                        bw.append(file.get(i));
-                                    }
-                                    if(i+1<file.size() && !file.get(i+1).isEmpty()){
-                                        bw.append('\n');
-                                    }
-                                    i++;
-                                }
-
-                                bw.close();
-                            }
-
-                        }
-
-                    } catch (IOException ex) {
-                        //System.out.println(ex.getMessage());
-                    }
-                }
-            });
-
-            JScrollPane scrollPane = new JScrollPane();
-            scrollPane.setViewportView(l);
-            l.setLayoutOrientation(JList.VERTICAL);
-            jd.add(scrollPane);
-            jd.setSize(new Dimension(200, 40 + 20 * arr.length));
-            jd.setPreferredSize(new Dimension(200, 40 + 20 * arr.length));
-            jd.setVisible(true);
-            jd.requestFocus();
-        });
+        jMenuItem22.addActionListener(e -> removeTagDial());
 
         jMenuItem3.addActionListener(e -> System.out.println("open")); //add to collection
 
@@ -181,6 +80,111 @@ public class Menu {
         jMenuBar.add(jMenu4);
 
         return jMenuBar;
+    }
+
+    public static void viewTagDial() {
+        JDialog jd = new JDialog(Main.curFrame);
+        String[] arr = new String[1];
+        arr[0] = "none";
+        if (FileRead.imgData.first.get(Image.curImage.getName()) != null && !FileRead.imgData.first.get(Image.curImage.getName()).isEmpty()) {
+            arr = new String[FileRead.imgData.first.get(Image.curImage.getName()).size()];
+            int i = 0;
+            for (String tag : FileRead.imgData.first.get(Image.curImage.getName())) {
+                arr[i] = tag;
+                i++;
+            }
+        }
+        JList<String> l = new JList<>(arr);
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setViewportView(l);
+        l.setLayoutOrientation(JList.VERTICAL);
+        jd.add(scrollPane);
+        jd.setSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setPreferredSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setVisible(true);
+        jd.requestFocus();
+    }
+
+    public static void removeTagDial() {
+        JDialog jd = new JDialog(Main.curFrame);
+        String[] arr = new String[1];
+        arr[0] = "none";
+        if (FileRead.imgData.first.get(Image.curImage.getName()) != null) {
+            arr = new String[FileRead.imgData.first.get(Image.curImage.getName()).size()];
+            int i = 0;
+            for (String tag : FileRead.imgData.first.get(Image.curImage.getName())) {
+                arr[i] = tag;
+                i++;
+            }
+        }
+        JList<String> l = new JList<>(arr);
+
+        l.addListSelectionListener(e1 -> {
+            if (!l.getSelectedValue().equals("none")) {
+                try {
+                    String tag = l.getSelectedValue();
+                    jd.dispose();
+                    BufferedReader br = new BufferedReader(new FileReader(Main.curPath + "\\.fasttomedata"));
+                    ArrayList<String> file = new ArrayList<>();
+                    int i = -1;
+                    while (br.ready()) {
+                        file.add(br.readLine());
+                        if (file.get(file.size() - 1).startsWith(Image.curImage.getName())) {
+                            i = file.size() - 1;
+                        }
+                    }
+                    br.close();
+
+                    if (i != -1) {
+                        int pos = file.get(i).lastIndexOf(tag);
+
+                        if (pos != -1) {
+
+                            FileRead.imgData.first.get(Image.curImage.getName()).remove(tag);
+
+                            if (!FileRead.imgData.first.get(Image.curImage.getName()).isEmpty()) {
+                                file.set(i, file.get(i).substring(0, pos - 1) + file.get(i).substring(pos + tag.length()));
+                            } else {
+                                file.remove(i);
+                                FileRead.imgData.first.remove(Image.curImage.getName());
+                            }
+
+
+                            BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedata"));
+
+                            bw.write("");
+
+                            i = 0;
+
+                            while (i < file.size()) {
+                                if (!file.get(i).isEmpty()) {
+                                    bw.append(file.get(i));
+                                }
+                                if (i + 1 < file.size() && !file.get(i + 1).isEmpty()) {
+                                    bw.append('\n');
+                                }
+                                i++;
+                            }
+
+                            bw.close();
+                        }
+
+                    }
+
+                } catch (IOException ex) {
+                    //System.out.println(ex.getMessage());
+                }
+            }
+        });
+
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setViewportView(l);
+        l.setLayoutOrientation(JList.VERTICAL);
+        jd.add(scrollPane);
+        jd.setSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setPreferredSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setVisible(true);
+        jd.requestFocus();
     }
 
     public static JScrollPane getFirstView(List<File> l) {
@@ -320,7 +324,7 @@ public class Menu {
                                 bw.write("");
 
                                 for (String s : file) {
-                                    if(!s.isEmpty() && !s.equals(" ")){
+                                    if (!s.isEmpty() && !s.equals(" ")) {
                                         bw.append(s);
                                         bw.append('\n');
                                     }
