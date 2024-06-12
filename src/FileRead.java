@@ -114,44 +114,6 @@ public class FileRead {
         if (imgData.first.containsKey(a.getName())) {
 
             try {
-                BufferedReader br = new BufferedReader(new FileReader("src\\.ftcollections"));
-                ArrayList<String> file = new ArrayList<>();
-                int i = -1;
-                while (br.ready()) {
-                    file.add(br.readLine());
-                    if (file.get(file.size() - 1).startsWith(a.getName())) {
-                        i = file.size() - 1;
-                    }
-                }
-                br.close();
-                if (i != -1) {
-                    file.set(i, r.getName() + file.get(i).substring(file.get(i).indexOf(' ')));
-
-                    BufferedWriter bw = new BufferedWriter(new FileWriter("src\\.ftcollections"));
-
-                    bw.write("");
-
-                    for (String s : file) {
-                        if (!s.isEmpty() && !s.equals(" ")) {
-                            bw.append(s);
-                            bw.append('\n');
-                        }
-                    }
-
-                    bw.close();
-                }
-            } catch (IOException ex) {
-                System.out.println(ex.getMessage());
-            }
-
-
-            imgData.first.put(r.getName(), imgData.first.get(a.getName()));
-            imgData.first.remove(a.getName());
-        }
-
-        if (imgData.second.containsKey(a.getName())) {
-
-            try {
                 BufferedReader br = new BufferedReader(new FileReader(Main.curPath + "\\.fasttomedata"));
                 ArrayList<String> file = new ArrayList<>();
                 int i = -1;
@@ -183,8 +145,46 @@ public class FileRead {
             }
 
 
-            imgData.second.put(r.getName(), imgData.second.get(a.getName()));
-            imgData.second.remove(a.getName());
+            imgData.first.put(r.getName(), imgData.first.get(a.getName()));
+            imgData.first.remove(a.getName());
+        }
+
+        if (imgData.second.containsKey(a.getName())) {
+
+            try {
+                BufferedReader br = new BufferedReader(new FileReader("src\\.ftcollections"));
+                ArrayList<String> file = new ArrayList<>();
+                int i = -1;
+                while (br.ready()) {
+                    file.add(br.readLine());
+                    if (file.get(file.size() - 1).startsWith(a.getAbsolutePath())) {
+                        i = file.size() - 1;
+                    }
+                }
+                br.close();
+                if (i != -1) {
+                    file.set(i, r.getAbsolutePath() + file.get(i).substring(file.get(i).indexOf(' ')));
+
+                    BufferedWriter bw = new BufferedWriter(new FileWriter("src\\.ftcollections"));
+
+                    bw.write("");
+
+                    for (String s : file) {
+                        if (!s.isEmpty() && !s.equals(" ")) {
+                            bw.append(s);
+                            bw.append('\n');
+                        }
+                    }
+
+                    bw.close();
+                }
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+            }
+
+
+            imgData.second.put(r.getAbsolutePath(), imgData.second.get(a.getAbsolutePath()));
+            imgData.second.remove(a.getAbsolutePath());
         }
 
 
