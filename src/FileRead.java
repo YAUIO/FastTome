@@ -72,11 +72,8 @@ public class FileRead {
             i++;
         }
 
-        i = 0;
-
-        for(File f : pictures){
-           colData.add(readData(arr[i]));
-           i++;
+        for(String path : arr){
+           colData.add(readData(path));
         }
 
         imgData.first.clear();
@@ -150,7 +147,7 @@ public class FileRead {
             System.out.println(e.getStackTrace() + " Collections file wasn't found");
         }
 
-        try {
+        /*try {
             BufferedReader br = new BufferedReader(new FileReader(path + ".fasttomedata"));
             String buf;
             ArrayList<String> ab;
@@ -170,7 +167,7 @@ public class FileRead {
             br.close();
         } catch (IOException e) {
             System.out.println(e.getStackTrace() + " Metadata file wasn't found");
-        }
+        }*/
 
         return new Triple<>(tags, collections, descriptions);
     }
