@@ -87,43 +87,24 @@ public class Menu {
     public static void viewCollections() {
         JDialog jd = new JDialog(Main.curFrame);
         String[] arr = new String[1];
-        arr[0] = "none";
-
-        try {
-            BufferedReader bc = new BufferedReader(new FileReader("src\\.ftcollections"));
-            String buf;
-            HashSet<String> coll = new HashSet<>();
-            int i, c;
-            while (bc.ready()) {
-                buf = bc.readLine();
-                i = buf.indexOf("Collections:") + 12;
-                c = i;
-                while (c != buf.length() - 1) {
-                    i = c + 1;
-                    c = buf.indexOf(" ", c + 1);
-                    coll.add(buf.substring(i, c));
+        arr[0] = "All files";
+            if (FileRead.imgData.second.get(Image.curImage.getAbsolutePath()) != null && !FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).isEmpty()) {
+                arr = new String[FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).size()+1];
+                arr[0] = "All files";
+                int i = 1;
+                for (String tag : FileRead.imgData.second.get(Image.curImage.getAbsolutePath())) {
+                    arr[i] = tag;
+                    i++;
                 }
             }
-            bc.close();
-
-            arr = new String[coll.size()];
-
-            i = 0;
-
-            for (String s : coll) {
-                arr[i] = s;
-                i++;
-            }
-
-        } catch (IOException e) {
-            System.out.println(e.getStackTrace() + " Collections file wasn't found");
-        }
-
         JList<String> l = new JList<>(arr);
         l.addListSelectionListener(e -> {
             jd.dispose();
-
-            //todo make view
+            if(!l.getSelectedValue().equals("All files")){
+                Main.pictures = FileRead.getFilesCollection(l.getSelectedValue());
+            }else{
+                Main.pictures = FileRead.getFiles(Main.curPath);
+            }
 
         });
         JScrollPane scrollPane = new JScrollPane();

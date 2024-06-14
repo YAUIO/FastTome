@@ -43,6 +43,65 @@ public class FileRead {
         return pictures;
     }
 
+    public static List<File> getFilesCollection(String collection) {
+
+        List<File> pictures = new ArrayList<>();
+
+        Set<Map.Entry<String, ArrayList<String>>> val = imgData.second.entrySet();
+
+        for(Map.Entry<String, ArrayList<String>> n : val){
+            if(n.getValue().contains(collection)){
+                pictures.add(new File(n.getKey()));
+            }
+        }
+
+        ArrayList <Pair<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>>> colData = new ArrayList<>();
+
+        HashSet<String> dirs = new HashSet<>();
+
+        for(File f : pictures){
+            dirs.add(f.getPath().substring(0,f.getPath().length()-f.getName().length()));
+        }
+
+        String[] arr = new String[dirs.size()];
+
+        int i = 0;
+
+        for (String s : dirs) {
+            arr[i] = s;
+            i++;
+        }
+
+        i = 0;
+
+        for(File f : pictures){
+           colData.add(readData(arr[i]));
+           i++;
+        }
+
+        imgData.first.clear();
+        imgData.second.clear();
+
+        for(Pair<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>> p : colData) {
+            for (String entry : p.first.keySet()){
+                i = 0;
+                while (i<pictures.size()){
+                    if (pictures.get(i).getName().equals(entry)){
+                        imgData.first.put(entry,p.first.get(entry));
+                    }
+                    i++;
+                }
+            }
+
+            for (String entry : p.second.keySet()){
+                if(pictures.contains(new File(entry))){
+                    imgData.second.put(entry, p.second.get(entry));
+                }
+            }
+        }
+        return pictures;
+    }
+
     private static Pair<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>> readData(String path) {
         Map<String, ArrayList<String>> tags = new HashMap<>();
         Map<String, ArrayList<String>> collections = new HashMap<>();
@@ -78,7 +137,7 @@ public class FileRead {
             while (bc.ready()) {
                 ab = new ArrayList<>();
                 buf = bc.readLine();
-                i = buf.indexOf("Collections:") + 5;
+                i = buf.indexOf("Collections:") + 12;
                 c = i;
                 while (c != buf.length() - 1) {
                     i = c + 1;

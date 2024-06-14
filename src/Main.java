@@ -9,13 +9,14 @@ public class Main {
     static JFrame curFrame;
     static String curPath;
     static int i = 0;
+    static List<File> pictures;
 
     public static void main(String[] args) throws Exception {
         Menu.directory = "D:\\Users\\User\\Pictures\\Avka"; //add / for linux
         int x = 1280;
         int y = 720;
         curFrame = new JFrame("FastTome");
-        List<File> pictures = FileRead.getFiles(Menu.directory);
+        pictures = FileRead.getFiles(Menu.directory);
         int prevI = 0;
         boolean display = true;
         boolean init = true;
