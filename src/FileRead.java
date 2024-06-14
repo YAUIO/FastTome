@@ -84,12 +84,10 @@ public class FileRead {
 
         for(Pair<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>> p : colData) {
             for (String entry : p.first.keySet()){
-                i = 0;
-                while (i<pictures.size()){
-                    if (pictures.get(i).getName().equals(entry)){
+                for (File f : pictures){
+                    if (f.getName().equals(entry)){
                         imgData.first.put(entry,p.first.get(entry));
                     }
-                    i++;
                 }
             }
 
