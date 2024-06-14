@@ -50,8 +50,8 @@ public class Menu {
         JMenuItem jMenuItem2 = new JMenuItem("Add");
         JMenuItem jMenuItem21 = new JMenuItem("View");
         JMenuItem jMenuItem22 = new JMenuItem("Remove");
-        JMenuItem jMenuItem3 = new JMenuItem("Add to collection");
-        JMenuItem jMenuItem4 = new JMenuItem("Sample Collection");
+        JMenuItem jMenuItem3 = new JMenuItem("Add to");
+        JMenuItem jMenuItem4 = new JMenuItem("View");
 
         jMenu1.add(jMenuItem);
         jMenu2.add(jMenuItem1);
@@ -73,7 +73,7 @@ public class Menu {
 
         jMenuItem3.addActionListener(e -> addToCollection()); //add to collection
 
-        jMenuItem4.addActionListener(e -> System.out.println("open")); //sample collection
+        jMenuItem4.addActionListener(e -> viewCollections()); //sample collection
 
         jMenuBar.add(jMenu);
         jMenuBar.add(jMenu1);
@@ -84,20 +84,19 @@ public class Menu {
         return jMenuBar;
     }
 
-    public static void addToCollection() {
+    public static void viewCollections() {
         JDialog jd = new JDialog(Main.curFrame);
         String[] arr = new String[1];
-        arr[0] = "New collection";
+        arr[0] = "none";
 
         try {
             BufferedReader bc = new BufferedReader(new FileReader("src\\.ftcollections"));
             String buf;
             HashSet<String> coll = new HashSet<>();
-            ArrayList<String> ab;
             int i, c;
             while (bc.ready()) {
                 buf = bc.readLine();
-                i = buf.indexOf("Collections:") + 5;
+                i = buf.indexOf("Collections:") + 12;
                 c = i;
                 while (c != buf.length() - 1) {
                     i = c + 1;
@@ -107,15 +106,72 @@ public class Menu {
             }
             bc.close();
 
-            for(String s : coll) {
+            arr = new String[coll.size()];
+
+            i = 0;
+
+            for (String s : coll) {
+                arr[i] = s;
+                i++;
+            }
+
+        } catch (IOException e) {
+            System.out.println(e.getStackTrace() + " Collections file wasn't found");
+        }
+
+        JList<String> l = new JList<>(arr);
+        l.addListSelectionListener(e -> {
+            jd.dispose();
+
+            //todo make view
+
+        });
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setViewportView(l);
+        l.setLayoutOrientation(JList.VERTICAL);
+        jd.add(scrollPane);
+        jd.setSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setPreferredSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setVisible(true);
+        jd.requestFocus();
+    }
+
+
+    public static void addToCollection() {
+        JDialog jd = new JDialog(Main.curFrame);
+        String[] arr = new String[1];
+        arr[0] = "New collection";
+
+        try {
+            BufferedReader bc = new BufferedReader(new FileReader("src\\.ftcollections"));
+            String buf;
+            HashSet<String> coll = new HashSet<>();
+            int i, c;
+            while (bc.ready()) {
+                buf = bc.readLine();
+                i = buf.indexOf("Collections:") + 12;
+                c = i;
+                while (c != buf.length() - 1) {
+                    i = c + 1;
+                    c = buf.indexOf(" ", c + 1);
+                    coll.add(buf.substring(i, c));
+                }
+            }
+            bc.close();
+
+            ArrayList<String> toRemove = new ArrayList<>();
+
+            for (String s : coll) {
                 if ((FileRead.imgData.second.get(Image.curImage.getAbsolutePath()) != null && !FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).isEmpty())) {
                     if (FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).contains(s)) {
-                        coll.remove(s);
+                        toRemove.add(s);
                     }
                 }
             }
 
-            arr = new String[coll.size()];
+            coll.removeAll(toRemove);
+
+            arr = new String[coll.size() + 1];
 
             arr[0] = "New collection";
 
@@ -132,12 +188,14 @@ public class Menu {
 
         JList<String> l = new JList<>(arr);
         l.addListSelectionListener(e -> {
+
+            jd.dispose();
             if (l.getSelectedIndex() == 0) {
-                jd.dispose();
                 openNewCollectionDial();
             } else {
-
+                writeCollection(l.getSelectedValue());
             }
+
         });
         JScrollPane scrollPane = new JScrollPane();
         scrollPane.setViewportView(l);
@@ -149,8 +207,102 @@ public class Menu {
         jd.requestFocus();
     }
 
-    public static void openNewCollectionDial() {
+    public static void writeCollection(String col) {
 
+        boolean isRecord = FileRead.imgData.second.containsKey(Image.curImage.getAbsolutePath());
+        boolean isTag = false;
+        if (isRecord) {
+            isTag = FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).contains(col);
+        }
+
+        try {
+            if (!isTag && !isRecord) {
+                BufferedWriter bw = new BufferedWriter(new FileWriter("src\\.ftcollections", true));
+                if (!FileRead.imgData.second.isEmpty()) {
+                    bw.append('\n');
+                }
+                bw.append(Image.curImage.getAbsolutePath()).append(" Collections: ");
+                bw.append(col);
+                bw.append(' ');
+                ArrayList<String> tags = new ArrayList<>();
+                tags.add(col);
+                FileRead.imgData.second.put(Image.curImage.getAbsolutePath(), tags);
+                bw.close();
+            } else if (!isTag) {
+                BufferedReader br = new BufferedReader(new FileReader("src\\.ftcollections"));
+                ArrayList<String> file = new ArrayList<>();
+                int i = -1;
+                while (br.ready()) {
+                    file.add(br.readLine());
+                    if (file.get(file.size() - 1).startsWith(Image.curImage.getAbsolutePath())) {
+                        i = file.size() - 1;
+                    }
+                }
+                br.close();
+                if (i != -1) {
+                    file.set(i, file.get(i) + col + " ");
+
+                    BufferedWriter bw = new BufferedWriter(new FileWriter("src\\.ftcollections"));
+
+                    bw.write("");
+
+                    for (String s : file) {
+                        if (!s.isEmpty() && !s.equals(" ")) {
+                            bw.append(s);
+                            bw.append('\n');
+                        }
+                    }
+
+                    bw.close();
+
+                    FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).add(col);
+                }
+            }
+
+        } catch (IOException ex) {
+            System.out.println(ex.getStackTrace());
+        }
+    }
+
+    public static void openNewCollectionDial() {
+        JDialog dial = new JDialog(Main.curFrame);
+        JLabel l = new JLabel("Type in new collection (no whitespaces)");
+        l.setHorizontalTextPosition(SwingConstants.CENTER);
+        l.setVerticalTextPosition(SwingConstants.CENTER);
+        l.setHorizontalAlignment(SwingConstants.CENTER);
+        l.setVerticalAlignment(SwingConstants.CENTER);
+        dial.add(l, BorderLayout.NORTH);
+
+        JTextArea jt = new JTextArea();
+        jt.setPreferredSize(new Dimension(260, 80));
+        jt.setEditable(true);
+        dial.add(jt, BorderLayout.CENTER);
+
+        jt.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    String tag = jt.getText();
+                    jt.setText("");
+                    dial.dispose();
+                    writeCollection(tag);
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+        });
+
+        dial.setSize(new Dimension(260, 80));
+        dial.setPreferredSize(new Dimension(260, 80));
+        dial.pack();
+        dial.setVisible(true);
     }
 
     public static void viewTagDial() {

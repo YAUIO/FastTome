@@ -9,4 +9,7 @@ public class Triple<T, V, X> {
         this.second = second;
         this.third = third;
     }
+
+    public Triple(){
+    }
 }

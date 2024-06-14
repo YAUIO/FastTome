@@ -37,13 +37,13 @@ public class FileRead {
                 //System.out.println(e.getStackTrace() + " Metadata file wasn't created");
             }
         } else {
-            imgData = readData(pictures, path);
+            imgData = readData(path);
         }
 
         return pictures;
     }
 
-    private static Pair<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>> readData(List<File> pictures, String path) {
+    private static Pair<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>> readData(String path) {
         Map<String, ArrayList<String>> tags = new HashMap<>();
         Map<String, ArrayList<String>> collections = new HashMap<>();
 
