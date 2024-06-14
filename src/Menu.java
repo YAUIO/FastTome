@@ -1,14 +1,12 @@
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class Menu {
     static String directory = "none";
@@ -21,70 +19,277 @@ public class Menu {
     public static JMenuBar getMenu() {
         JMenuBar jMenuBar = new JMenuBar();
 
-        JMenu jMenu = new JMenu("View");
-        JMenu jMenu1 = new JMenu("Open new directory");
-        JMenu jMenu2 = new JMenu("Rename");
-        JMenu jMenu3 = new JMenu("Tags");
-        JMenu jMenu4 = new JMenu("Collections");
+        JMenu view = new JMenu("Layout");
+        JMenu directory = new JMenu("Open new directory");
+        JMenu edit = new JMenu("Edit");
+        JMenu info = new JMenu("Info / Collections");
+        JMenu search = new JMenu("Search");
 
 
         view0.addActionListener(e -> {
             view1.setState(false);
             view0.setState(true);
-            view = 0;
+            Menu.view = 0;
             viewChanged = true;
         });
 
         view1.addActionListener(e -> {
             view0.setState(false);
             view1.setState(true);
-            view = 1;
+            Menu.view = 1;
             viewChanged = true;
         });
 
-        jMenu.add(view0);
-        jMenu.add(view1);
+        view.add(view0);
+        view.add(view1);
 
-        JMenuItem jMenuItem = new JMenuItem("Open");
-        JMenuItem jMenuItem1 = new JMenuItem("Rename");
-        JMenuItem jMenuItem2 = new JMenuItem("Add");
-        JMenuItem jMenuItem21 = new JMenuItem("View");
-        JMenuItem jMenuItem22 = new JMenuItem("Remove");
-        JMenuItem jMenuItem3 = new JMenuItem("Add to");
-        JMenuItem jMenuItem4 = new JMenuItem("View");
+        JMenuItem open = new JMenuItem("Open");
+        JMenuItem rename1 = new JMenuItem("Rename");
+        JMenuItem addTag = new JMenuItem("Add tag");
+        JMenuItem tags = new JMenuItem("Tags");
+        JMenuItem removeTag = new JMenuItem("Remove tag");
+        JMenuItem description = new JMenuItem("Description");
+        JMenuItem descriptionEdit = new JMenuItem("Description");
+        JMenuItem addTo = new JMenuItem("Add to");
+        JMenuItem removeFrom = new JMenuItem("Remove from");
+        JMenuItem collections = new JMenuItem("Collections");
+        JMenuItem filterBy = new JMenuItem("Filter by");
 
-        jMenu1.add(jMenuItem);
-        jMenu2.add(jMenuItem1);
-        jMenu3.add(jMenuItem2);
-        jMenu3.add(jMenuItem21);
-        jMenu3.add(jMenuItem22);
-        jMenu4.add(jMenuItem3);
-        jMenu4.add(jMenuItem4);
+        directory.add(open);
 
-        jMenuItem.addActionListener(e -> Menu.openDirDialog()); //change directory
+        edit.add(rename1);
+        edit.add(addTag);
+        edit.add(removeTag);
+        edit.add(addTo);
+        edit.add(removeFrom);
+        edit.add(descriptionEdit);
 
-        jMenuItem1.addActionListener(e -> Menu.openRenameDial()); //rename
+        info.add(description);
+        info.add(collections);
+        info.add(tags);
 
-        jMenuItem2.addActionListener(e -> Menu.writeTagToFile()); //add tag
+        search.add(filterBy);
 
-        jMenuItem21.addActionListener(e -> viewTagDial()); //view tags
+        open.addActionListener(e -> openDirDialog()); //change directory
 
-        jMenuItem22.addActionListener(e -> removeTagDial()); //remove a tag
+        rename1.addActionListener(e -> openRenameDial()); //rename
 
-        jMenuItem3.addActionListener(e -> addToCollection()); //add to collection
+        addTag.addActionListener(e -> writeTagToFile()); //add tag
 
-        jMenuItem4.addActionListener(e -> viewCollections()); //sample collection
+        tags.addActionListener(e -> viewTagDial()); //view tags
 
-        jMenuBar.add(jMenu);
-        jMenuBar.add(jMenu1);
-        jMenuBar.add(jMenu2);
-        jMenuBar.add(jMenu3);
-        jMenuBar.add(jMenu4);
+        removeTag.addActionListener(e -> removeTagDial()); //remove a tag
+
+        addTo.addActionListener(e -> addToCollection()); //add to collection
+
+        removeFrom.addActionListener(e -> removeColDial()); //remove from collection
+
+        collections.addActionListener(e -> viewCollections()); //choose collection to look at
+
+        filterBy.addActionListener(e -> Search.filterDialogue());
+
+        description.addActionListener(e -> viewDescription());
+
+        descriptionEdit.addActionListener(e -> editDescription());
+
+        jMenuBar.add(info);
+        jMenuBar.add(edit);
+        jMenuBar.add(view);
+        jMenuBar.add(directory);
+        jMenuBar.add(search);
 
         return jMenuBar;
     }
 
-    public static void viewCollections() {
+    private static void editDescription() {
+        JDialog dial = new JDialog(Main.curFrame);
+        JLabel l = new JLabel("Enter to save, Shift+Enter new line");
+        l.setHorizontalTextPosition(SwingConstants.CENTER);
+        l.setVerticalTextPosition(SwingConstants.CENTER);
+        l.setHorizontalAlignment(SwingConstants.CENTER);
+        l.setVerticalAlignment(SwingConstants.CENTER);
+        dial.add(l, BorderLayout.NORTH);
+
+        JTextArea jt = new JTextArea();
+        if (FileRead.imgData.third.containsKey(Image.curImage.getName())){
+            if (!FileRead.imgData.third.get(Image.curImage.getName()).isEmpty()){
+                jt.setText(FileRead.imgData.third.get(Image.curImage.getName()));
+            }
+        }
+        jt.setPreferredSize(new Dimension(260, 80));
+        jt.setEditable(true);
+        dial.add(jt, BorderLayout.CENTER);
+
+        jt.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if(e.getModifiersEx() == InputEvent.SHIFT_DOWN_MASK && e.getKeyCode() == KeyEvent.VK_ENTER){
+                    jt.setText(jt.getText() + "\n");
+                } else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    String description = jt.getText();
+                    jt.setText("");
+                    dial.dispose();
+
+                    description = description.replace('\n','/');
+
+                    boolean isEmpty = FileRead.imgData.third.isEmpty();
+                    boolean isRecord = FileRead.imgData.third.containsKey(Image.curImage.getName());
+                    boolean isDescription = false;
+                    if (isRecord) {
+                        isDescription = FileRead.imgData.third.get(Image.curImage.getName()).contains(description);
+                    }
+
+                    try {
+                        if (!isDescription && !isRecord) {
+                            BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedata", true));
+                            if (!FileRead.imgData.third.isEmpty()) {
+                                bw.append('\n');
+                            }
+                            bw.append(Image.curImage.getName()).append(" Description: ");
+                            bw.append(description);
+                            bw.append(' ');
+                            FileRead.imgData.third.put(Image.curImage.getName(), description);
+                            bw.close();
+                        } else if (!isDescription) {
+                            BufferedReader br = new BufferedReader(new FileReader(Main.curPath + "\\.fasttomedata"));
+                            ArrayList<String> file = new ArrayList<>();
+                            int i = -1;
+                            while (br.ready()) {
+                                file.add(br.readLine());
+                                if (file.get(file.size() - 1).startsWith(Image.curImage.getName())) {
+                                    i = file.size() - 1;
+                                }
+                            }
+                            br.close();
+                            if (i != -1) {
+                                file.set(i, description);
+
+                                BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedata"));
+
+                                bw.write("");
+
+                                for (String s : file) {
+                                    if (!s.isEmpty() && !s.equals(" ")) {
+                                        bw.append(s);
+                                        bw.append('\n');
+                                    }
+                                }
+
+                                bw.close();
+
+                                FileRead.imgData.third.replace(Image.curImage.getName(),description);
+                            }
+                        }
+
+                    } catch (IOException ex) {
+                        System.out.println(ex.getStackTrace());
+                    }
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+        });
+
+        dial.setSize(new Dimension(260, 80));
+        dial.setPreferredSize(new Dimension(260, 80));
+        dial.pack();
+        dial.setVisible(true);
+    } //todo
+
+    private static void viewDescription(){ // todo
+
+    }
+
+    private static void removeColDial() {
+        JDialog jd = new JDialog(Main.curFrame);
+        String[] arr = new String[1];
+        arr[0] = "none";
+        if (FileRead.imgData.second.get(Image.curImage.getAbsolutePath()) != null) {
+            arr = new String[FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).size()];
+            int i = 0;
+            for (String tag : FileRead.imgData.second.get(Image.curImage.getAbsolutePath())) {
+                arr[i] = tag;
+                i++;
+            }
+        }
+        JList<String> l = new JList<>(arr);
+
+        l.addListSelectionListener(e1 -> {
+            if (!l.getSelectedValue().equals("none")) {
+                try {
+                    String tag = l.getSelectedValue();
+                    jd.dispose();
+                    BufferedReader br = new BufferedReader(new FileReader("src\\.ftcollections"));
+                    ArrayList<String> file = new ArrayList<>();
+                    int i = -1;
+                    while (br.ready()) {
+                        file.add(br.readLine());
+                        if (file.get(file.size() - 1).startsWith(Image.curImage.getAbsolutePath())) {
+                            i = file.size() - 1;
+                        }
+                    }
+                    br.close();
+
+                    if (i != -1) {
+                        int pos = file.get(i).lastIndexOf(tag);
+
+                        if (pos != -1) {
+
+                            FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).remove(tag);
+
+                            if (!FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).isEmpty()) {
+                                file.set(i, file.get(i).substring(0, pos - 1) + file.get(i).substring(pos + tag.length()));
+                            } else {
+                                file.remove(i);
+                                FileRead.imgData.second.remove(Image.curImage.getAbsolutePath());
+                            }
+
+
+                            BufferedWriter bw = new BufferedWriter(new FileWriter("src\\.ftcollections"));
+
+                            bw.write("");
+
+                            i = 0;
+
+                            while (i < file.size()) {
+                                if (!file.get(i).isEmpty()) {
+                                    bw.append(file.get(i));
+                                }
+                                if (i + 1 < file.size() && !file.get(i + 1).isEmpty()) {
+                                    bw.append('\n');
+                                }
+                                i++;
+                            }
+
+                            bw.close();
+                        }
+
+                    }
+
+                } catch (IOException ex) {
+                    //System.out.println(ex.getMessage());
+                }
+            }
+        });
+
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setViewportView(l);
+        l.setLayoutOrientation(JList.VERTICAL);
+        jd.add(scrollPane);
+        jd.setSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setPreferredSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setVisible(true);
+        jd.requestFocus();
+    }
+
+    private static void viewCollections() {
         JDialog jd = new JDialog(Main.curFrame);
         String[] arr = new String[1];
         arr[0] = "All files";
@@ -117,8 +322,7 @@ public class Menu {
         jd.requestFocus();
     }
 
-
-    public static void addToCollection() {
+    private static void addToCollection() {
         JDialog jd = new JDialog(Main.curFrame);
         String[] arr = new String[1];
         arr[0] = "New collection";
@@ -188,7 +392,7 @@ public class Menu {
         jd.requestFocus();
     }
 
-    public static void writeCollection(String col) {
+    private static void writeCollection(String col) {
 
         boolean isRecord = FileRead.imgData.second.containsKey(Image.curImage.getAbsolutePath());
         boolean isTag = false;
@@ -245,7 +449,7 @@ public class Menu {
         }
     }
 
-    public static void openNewCollectionDial() {
+    private static void openNewCollectionDial() {
         JDialog dial = new JDialog(Main.curFrame);
         JLabel l = new JLabel("Type in new collection (no whitespaces)");
         l.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -286,7 +490,7 @@ public class Menu {
         dial.setVisible(true);
     }
 
-    public static void viewTagDial() {
+    private static void viewTagDial() {
         JDialog jd = new JDialog(Main.curFrame);
         String[] arr = new String[1];
         arr[0] = "none";
@@ -309,7 +513,7 @@ public class Menu {
         jd.requestFocus();
     }
 
-    public static void removeTagDial() {
+    private static void removeTagDial() {
         JDialog jd = new JDialog(Main.curFrame);
         String[] arr = new String[1];
         arr[0] = "none";
@@ -406,7 +610,7 @@ public class Menu {
         return scrollPane;
     }
 
-    public static void openDirDialog() {
+    private static void openDirDialog() {
         JFileChooser jFileChooser = new JFileChooser();
         jFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         jFileChooser.addActionListener(e -> {
@@ -424,7 +628,7 @@ public class Menu {
         jFileChooser.setVisible(true);
     }
 
-    public static void openRenameDial() {
+    private static void openRenameDial() {
         JDialog dial = new JDialog(Main.curFrame);
         JLabel l = new JLabel("Type in new name (with .ext)");
         l.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -464,7 +668,7 @@ public class Menu {
         dial.setVisible(true);
     }
 
-    public static void writeTagToFile() {
+    private static void writeTagToFile() {
         JDialog dial = new JDialog(Main.curFrame);
         JLabel l = new JLabel("Type in new tag (no whitespaces)");
         l.setHorizontalTextPosition(SwingConstants.CENTER);

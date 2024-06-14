@@ -5,7 +5,7 @@ import java.util.stream.Stream;
 import java.util.Map;
 
 public class FileRead {
-    static Pair<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>> imgData;
+    static Triple<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>, Map<String, String>> imgData;
 
     public static List<File> getFiles(String path) {
         path += "\\";
@@ -47,15 +47,15 @@ public class FileRead {
 
         List<File> pictures = new ArrayList<>();
 
-        Set<Map.Entry<String, ArrayList<String>>> val = imgData.second.entrySet();
+        Set<Map.Entry<String, ArrayList<String>>> dbEntries = imgData.second.entrySet();
 
-        for(Map.Entry<String, ArrayList<String>> n : val){
+        for(Map.Entry<String, ArrayList<String>> n : dbEntries){
             if(n.getValue().contains(collection)){
                 pictures.add(new File(n.getKey()));
             }
         }
 
-        ArrayList <Pair<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>>> colData = new ArrayList<>();
+        ArrayList <Triple<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>, Map<String, String>>> colData = new ArrayList<>();
 
         HashSet<String> dirs = new HashSet<>();
 
@@ -82,7 +82,7 @@ public class FileRead {
         imgData.first.clear();
         imgData.second.clear();
 
-        for(Pair<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>> p : colData) {
+        for(Triple<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>, Map<String, String>> p : colData) {
             for (String entry : p.first.keySet()){
                 for (File f : pictures){
                     if (f.getName().equals(entry)){
@@ -100,9 +100,10 @@ public class FileRead {
         return pictures;
     }
 
-    private static Pair<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>> readData(String path) {
+    private static Triple<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>, Map<String, String>> readData(String path) {
         Map<String, ArrayList<String>> tags = new HashMap<>();
         Map<String, ArrayList<String>> collections = new HashMap<>();
+        Map<String, String> descriptions = new HashMap<>();
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(path + ".fasttomedata"));
@@ -149,7 +150,29 @@ public class FileRead {
             System.out.println(e.getStackTrace() + " Collections file wasn't found");
         }
 
-        return new Pair<>(tags, collections);
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(path + ".fasttomedata"));
+            String buf;
+            ArrayList<String> ab;
+            int i = 0;
+            int c = 0;
+            while (br.ready()) {
+                buf = br.readLine();
+                i = buf.indexOf("Description:") + 12;
+                c = i;
+                while (c != buf.length() - 1) {
+                    i = c + 1;
+                    c = buf.indexOf(" ", c + 1);
+                    //todo read description
+                }
+                descriptions.put(buf.substring(0, buf.indexOf(" ")), buf);
+            }
+            br.close();
+        } catch (IOException e) {
+            System.out.println(e.getStackTrace() + " Metadata file wasn't found");
+        }
+
+        return new Triple<>(tags, collections, descriptions);
     }
 
     public static Pair<Boolean, File> rename(File a) {
