@@ -5,24 +5,26 @@ import java.io.File;
 import java.util.List;
 
 public class Main {
+    static final int x = 1280;
+    static final int y = 720;
     static JMenuBar jMenuBar;
     static JFrame curFrame;
     static String curPath;
     static int i = 0;
     static List<File> pictures;
+    static Triple<JLabel, BufferedImage, JLabel> label;
+    static JScrollPane firstView;
 
     public static void main(String[] args) throws Exception {
         Menu.directory = "D:\\Users\\User\\Pictures\\Avka"; //add / for linux
-        int x = 1280;
-        int y = 720;
         curFrame = new JFrame("FastTome");
         pictures = FileRead.getFiles(Menu.directory);
         int prevI = 0;
         boolean display = true;
         boolean init = true;
         KeyListenerMenu keyListenerMenu = new KeyListenerMenu();
-        JScrollPane firstView = new JScrollPane();
-        Triple<JLabel, BufferedImage, JLabel> label = new Triple<>(new JLabel(), new BufferedImage(x,y,BufferedImage.TYPE_INT_RGB), new JLabel());
+        firstView = new JScrollPane();
+        label = new Triple<>(new JLabel(), new BufferedImage(x,y,BufferedImage.TYPE_INT_RGB), new JLabel());
         curFrame.setSize(x, y);
         curFrame.setPreferredSize(new Dimension(x,y));
         curFrame.setLayout(new BorderLayout());

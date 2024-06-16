@@ -1,11 +1,17 @@
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.Map;
 
 public class FileRead {
-    static Triple<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>, Map<String, String>> imgData;
+    static Map<String, ArrayList<String>> imgTags;
+    static Map<String, ArrayList<String>> imgColl;
+    static Map<String, String> imgDesc;
+    static Map<String, FileTime> imgDate;
 
     public static List<File> getFiles(String path) {
         path += "\\";
@@ -21,6 +27,15 @@ public class FileRead {
 
         File data = new File(path + ".fasttomedata");
         File collections = new File("src\\.ftcollections");
+        File descriptions = new File(path + ".fasttomedesc");
+
+        if (!descriptions.exists()) {
+            try {
+                descriptions.createNewFile();
+            } catch (IOException e) {
+                //System.out.println(e.getStackTrace() + " Metadata file wasn't created");
+            }
+        }
 
         if (!collections.exists()) {
             try {
@@ -37,7 +52,26 @@ public class FileRead {
                 //System.out.println(e.getStackTrace() + " Metadata file wasn't created");
             }
         } else {
-            imgData = readData(path);
+            Triple<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>, Map<String, String>> imgData = readData(path);
+            imgTags = imgData.first;
+            imgColl = imgData.second;
+            imgDesc = imgData.third;
+        }
+
+        try {
+            if(!(Boolean)Files.getAttribute(Path.of(data.getPath()), "dos:hidden")){
+                Files.setAttribute(Path.of(data.getPath()), "dos:hidden", true);
+            }
+
+            if(!(Boolean)Files.getAttribute(Path.of(collections.getPath()), "dos:hidden")){
+                Files.setAttribute(Path.of(collections.getPath()), "dos:hidden", true);
+            }
+
+            if(!(Boolean)Files.getAttribute(Path.of(descriptions.getPath()), "dos:hidden")){
+                Files.setAttribute(Path.of(descriptions.getPath()), "dos:hidden", true);
+            }
+        }catch(IOException ioex){
+            //System.out.println(ioex.getStackTrace());
         }
 
         return pictures;
@@ -47,7 +81,7 @@ public class FileRead {
 
         List<File> pictures = new ArrayList<>();
 
-        Set<Map.Entry<String, ArrayList<String>>> dbEntries = imgData.second.entrySet();
+        Set<Map.Entry<String, ArrayList<String>>> dbEntries = getCollections().entrySet();
 
         for(Map.Entry<String, ArrayList<String>> n : dbEntries){
             if(n.getValue().contains(collection)){
@@ -76,21 +110,29 @@ public class FileRead {
            colData.add(readData(path));
         }
 
-        imgData.first.clear();
-        imgData.second.clear();
+        imgTags.clear();
+        imgColl.clear();
 
         for(Triple<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>, Map<String, String>> p : colData) {
             for (String entry : p.first.keySet()){
                 for (File f : pictures){
                     if (f.getName().equals(entry)){
-                        imgData.first.put(entry,p.first.get(entry));
+                        imgTags.put(entry,p.first.get(entry));
                     }
                 }
             }
 
             for (String entry : p.second.keySet()){
                 if(pictures.contains(new File(entry))){
-                    imgData.second.put(entry, p.second.get(entry));
+                    imgColl.put(entry, p.second.get(entry));
+                }
+            }
+
+            for (String entry : p.third.keySet()){
+                for (File f : pictures){
+                    if (f.getName().equals(entry)){
+                        imgDesc.put(entry,p.third.get(entry));
+                    }
                 }
             }
         }
@@ -125,6 +167,34 @@ public class FileRead {
             System.out.println(e.getStackTrace() + " Metadata file wasn't found");
         }
 
+        collections = getCollections();
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(path + ".fasttomedesc"));
+            String buf;
+            ArrayList<String> ab;
+            int i = 0;
+            int c = 0;
+            while (br.ready()) {
+                buf = br.readLine();
+                i = buf.indexOf("Description:") + 12;
+                c = i;
+                while (c != buf.length() - 1) {
+                    i = c + 1;
+                    c = buf.indexOf(" ", c + 1);
+                }
+                descriptions.put(buf.substring(0, buf.indexOf(" ")), buf);
+            }
+            br.close();
+        } catch (IOException e) {
+            System.out.println(e.getStackTrace() + " Metadata file wasn't found");
+        }
+
+        return new Triple<>(tags, collections, descriptions);
+    }
+
+    public static HashMap<String,ArrayList<String>> getCollections(){
+        HashMap<String,ArrayList<String>> collections = new HashMap<>();
         try {
             BufferedReader bc = new BufferedReader(new FileReader("src\\.ftcollections"));
             String buf;
@@ -146,30 +216,7 @@ public class FileRead {
         } catch (IOException e) {
             System.out.println(e.getStackTrace() + " Collections file wasn't found");
         }
-
-        /*try {
-            BufferedReader br = new BufferedReader(new FileReader(path + ".fasttomedata"));
-            String buf;
-            ArrayList<String> ab;
-            int i = 0;
-            int c = 0;
-            while (br.ready()) {
-                buf = br.readLine();
-                i = buf.indexOf("Description:") + 12;
-                c = i;
-                while (c != buf.length() - 1) {
-                    i = c + 1;
-                    c = buf.indexOf(" ", c + 1);
-                    //todo read description
-                }
-                descriptions.put(buf.substring(0, buf.indexOf(" ")), buf);
-            }
-            br.close();
-        } catch (IOException e) {
-            System.out.println(e.getStackTrace() + " Metadata file wasn't found");
-        }*/
-
-        return new Triple<>(tags, collections, descriptions);
+        return collections;
     }
 
     public static Pair<Boolean, File> rename(File a) {
@@ -187,7 +234,7 @@ public class FileRead {
             return new Pair<>(false, a);
         }
 
-        if (imgData.first.containsKey(a.getName())) {
+        if (imgTags.containsKey(a.getName())) {
 
             try {
                 BufferedReader br = new BufferedReader(new FileReader(Main.curPath + "\\.fasttomedata"));
@@ -221,11 +268,11 @@ public class FileRead {
             }
 
 
-            imgData.first.put(r.getName(), imgData.first.get(a.getName()));
-            imgData.first.remove(a.getName());
+            imgTags.put(r.getName(), imgTags.get(a.getName()));
+            imgTags.remove(a.getName());
         }
 
-        if (imgData.second.containsKey(a.getName())) {
+        if (imgColl.containsKey(a.getName())) {
 
             try {
                 BufferedReader br = new BufferedReader(new FileReader("src\\.ftcollections"));
@@ -259,8 +306,8 @@ public class FileRead {
             }
 
 
-            imgData.second.put(r.getAbsolutePath(), imgData.second.get(a.getAbsolutePath()));
-            imgData.second.remove(a.getAbsolutePath());
+            imgColl.put(r.getAbsolutePath(), imgColl.get(a.getAbsolutePath()));
+            imgColl.remove(a.getAbsolutePath());
         }
 
 

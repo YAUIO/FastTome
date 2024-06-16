@@ -20,9 +20,9 @@ public class Menu {
         JMenuBar jMenuBar = new JMenuBar();
 
         JMenu view = new JMenu("Layout");
-        JMenu directory = new JMenu("Open new directory");
+        JMenu directory = new JMenu("Open");
         JMenu edit = new JMenu("Edit");
-        JMenu info = new JMenu("Info / Collections");
+        JMenu info = new JMenu("Info");
         JMenu search = new JMenu("Search");
 
 
@@ -43,7 +43,8 @@ public class Menu {
         view.add(view0);
         view.add(view1);
 
-        JMenuItem open = new JMenuItem("Open");
+        JMenuItem openD = new JMenuItem("Directory");
+        JMenuItem openC = new JMenuItem("Collection");
         JMenuItem rename1 = new JMenuItem("Rename");
         JMenuItem addTag = new JMenuItem("Add tag");
         JMenuItem tags = new JMenuItem("Tags");
@@ -55,7 +56,8 @@ public class Menu {
         JMenuItem collections = new JMenuItem("Collections");
         JMenuItem filterBy = new JMenuItem("Filter by");
 
-        directory.add(open);
+        directory.add(openD);
+        directory.add(openC);
 
         edit.add(rename1);
         edit.add(addTag);
@@ -70,7 +72,9 @@ public class Menu {
 
         search.add(filterBy);
 
-        open.addActionListener(e -> openDirDialog()); //change directory
+        openD.addActionListener(e -> openDirDialog()); //change directory
+
+        openC.addActionListener(e -> openColDialog()); //open a collection
 
         rename1.addActionListener(e -> openRenameDial()); //rename
 
@@ -84,7 +88,7 @@ public class Menu {
 
         removeFrom.addActionListener(e -> removeColDial()); //remove from collection
 
-        collections.addActionListener(e -> viewCollections()); //choose collection to look at
+        collections.addActionListener(e -> viewCollections()); //view and choose collections assigned to a photo
 
         filterBy.addActionListener(e -> Search.filterDialogue());
 
@@ -101,6 +105,65 @@ public class Menu {
         return jMenuBar;
     }
 
+    private static void openColDialog() {
+        JDialog jd = new JDialog(Main.curFrame);
+        String[] arr = new String[1];
+        arr[0] = "All files";
+        if (!FileRead.imgColl.values().isEmpty()) {
+            HashSet<String> val = new HashSet<>();
+
+            for (ArrayList<String> list : FileRead.imgColl.values()) {
+                val.addAll(list);
+            }
+
+            arr = new String[val.size() + 1];
+            arr[0] = "All files";
+            int i = 1;
+            for (String tag : val) {
+                arr[i] = tag;
+                i++;
+            }
+        }
+        JList<String> l = new JList<>(arr);
+        l.addListSelectionListener(e -> {
+            jd.dispose();
+            if (!l.getSelectedValue().equals("All files")) {
+                Main.i = 0;
+
+                view = 0;
+                view0.setState(true);
+                view1.setState(false);
+                Main.curFrame.remove(Main.firstView);
+                Main.curFrame.add(Main.label.first, BorderLayout.CENTER);
+                Main.curFrame.add(Main.label.third, BorderLayout.SOUTH);
+                Main.curFrame.pack();
+                Main.curFrame.setVisible(true);
+
+                Main.pictures = FileRead.getFilesCollection(l.getSelectedValue());
+                try {
+                    Main.curFrame.remove(Main.label.third);
+                    Main.label = Image.ParseImageF(Main.label.first, Main.pictures.get(Main.i).toString(), Main.x, Main.y);
+                    Main.curFrame.add(Main.label.third, BorderLayout.SOUTH);
+                    Main.curFrame.pack();
+                    Main.curFrame.setVisible(true);
+                } catch (IOException ex) {
+                    //System.out.println(ex.getStackTrace());
+                }
+            } else {
+                Main.pictures = FileRead.getFiles(Main.curPath);
+            }
+
+        });
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setViewportView(l);
+        l.setLayoutOrientation(JList.VERTICAL);
+        jd.add(scrollPane);
+        jd.setSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setPreferredSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setVisible(true);
+        jd.requestFocus();
+    }
+
     private static void editDescription() {
         JDialog dial = new JDialog(Main.curFrame);
         JLabel l = new JLabel("Enter to save, Shift+Enter new line");
@@ -111,12 +174,12 @@ public class Menu {
         dial.add(l, BorderLayout.NORTH);
 
         JTextArea jt = new JTextArea();
-        if (FileRead.imgData.third.containsKey(Image.curImage.getName())){
-            if (!FileRead.imgData.third.get(Image.curImage.getName()).isEmpty()){
-                jt.setText(FileRead.imgData.third.get(Image.curImage.getName()));
+        if (FileRead.imgDesc.containsKey(Image.curImage.getName())) {
+            if (!FileRead.imgDesc.get(Image.curImage.getName()).isEmpty()) {
+                jt.setText(FileRead.imgDesc.get(Image.curImage.getName()));
             }
         }
-        jt.setPreferredSize(new Dimension(260, 80));
+        jt.setPreferredSize(new Dimension(260, 240));
         jt.setEditable(true);
         dial.add(jt, BorderLayout.CENTER);
 
@@ -127,35 +190,35 @@ public class Menu {
 
             @Override
             public void keyPressed(KeyEvent e) {
-                if(e.getModifiersEx() == InputEvent.SHIFT_DOWN_MASK && e.getKeyCode() == KeyEvent.VK_ENTER){
+                if (e.getModifiersEx() == InputEvent.SHIFT_DOWN_MASK && e.getKeyCode() == KeyEvent.VK_ENTER) {
                     jt.setText(jt.getText() + "\n");
                 } else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     String description = jt.getText();
                     jt.setText("");
                     dial.dispose();
 
-                    description = description.replace('\n','/');
+                    description = description.replace('\n', '/');
 
-                    boolean isEmpty = FileRead.imgData.third.isEmpty();
-                    boolean isRecord = FileRead.imgData.third.containsKey(Image.curImage.getName());
+                    boolean isEmpty = FileRead.imgDesc.isEmpty();
+                    boolean isRecord = FileRead.imgDesc.containsKey(Image.curImage.getName());
                     boolean isDescription = false;
                     if (isRecord) {
-                        isDescription = FileRead.imgData.third.get(Image.curImage.getName()).contains(description);
+                        isDescription = FileRead.imgDesc.get(Image.curImage.getName()).contains(description);
                     }
 
                     try {
                         if (!isDescription && !isRecord) {
-                            BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedata", true));
-                            if (!FileRead.imgData.third.isEmpty()) {
+                            BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedesc", true));
+                            if (!FileRead.imgDesc.isEmpty()) {
                                 bw.append('\n');
                             }
                             bw.append(Image.curImage.getName()).append(" Description: ");
                             bw.append(description);
                             bw.append(' ');
-                            FileRead.imgData.third.put(Image.curImage.getName(), description);
+                            FileRead.imgDesc.put(Image.curImage.getName(), description);
                             bw.close();
                         } else if (!isDescription) {
-                            BufferedReader br = new BufferedReader(new FileReader(Main.curPath + "\\.fasttomedata"));
+                            BufferedReader br = new BufferedReader(new FileReader(Main.curPath + "\\.fasttomedesc"));
                             ArrayList<String> file = new ArrayList<>();
                             int i = -1;
                             while (br.ready()) {
@@ -168,7 +231,7 @@ public class Menu {
                             if (i != -1) {
                                 file.set(i, description);
 
-                                BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedata"));
+                                BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedesc"));
 
                                 bw.write("");
 
@@ -181,7 +244,7 @@ public class Menu {
 
                                 bw.close();
 
-                                FileRead.imgData.third.replace(Image.curImage.getName(),description);
+                                FileRead.imgDesc.replace(Image.curImage.getName(), description);
                             }
                         }
 
@@ -197,13 +260,13 @@ public class Menu {
             }
         });
 
-        dial.setSize(new Dimension(260, 80));
-        dial.setPreferredSize(new Dimension(260, 80));
+        dial.setSize(new Dimension(260, 240));
+        dial.setPreferredSize(new Dimension(260, 240));
         dial.pack();
         dial.setVisible(true);
-    } //todo
+    }
 
-    private static void viewDescription(){ // todo
+    private static void viewDescription() { // todo
 
     }
 
@@ -211,10 +274,10 @@ public class Menu {
         JDialog jd = new JDialog(Main.curFrame);
         String[] arr = new String[1];
         arr[0] = "none";
-        if (FileRead.imgData.second.get(Image.curImage.getAbsolutePath()) != null) {
-            arr = new String[FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).size()];
+        if (FileRead.imgColl.get(Image.curImage.getAbsolutePath()) != null) {
+            arr = new String[FileRead.imgColl.get(Image.curImage.getAbsolutePath()).size()];
             int i = 0;
-            for (String tag : FileRead.imgData.second.get(Image.curImage.getAbsolutePath())) {
+            for (String tag : FileRead.imgColl.get(Image.curImage.getAbsolutePath())) {
                 arr[i] = tag;
                 i++;
             }
@@ -242,13 +305,13 @@ public class Menu {
 
                         if (pos != -1) {
 
-                            FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).remove(tag);
+                            FileRead.imgColl.get(Image.curImage.getAbsolutePath()).remove(tag);
 
-                            if (!FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).isEmpty()) {
+                            if (!FileRead.imgColl.get(Image.curImage.getAbsolutePath()).isEmpty()) {
                                 file.set(i, file.get(i).substring(0, pos - 1) + file.get(i).substring(pos + tag.length()));
                             } else {
                                 file.remove(i);
-                                FileRead.imgData.second.remove(Image.curImage.getAbsolutePath());
+                                FileRead.imgColl.remove(Image.curImage.getAbsolutePath());
                             }
 
 
@@ -292,25 +355,41 @@ public class Menu {
     private static void viewCollections() {
         JDialog jd = new JDialog(Main.curFrame);
         String[] arr = new String[1];
-        arr[0] = "All files";
-            if (FileRead.imgData.second.get(Image.curImage.getAbsolutePath()) != null && !FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).isEmpty()) {
-                arr = new String[FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).size()+1];
-                arr[0] = "All files";
-                int i = 1;
-                for (String tag : FileRead.imgData.second.get(Image.curImage.getAbsolutePath())) {
-                    arr[i] = tag;
-                    i++;
-                }
+        arr[0] = "none";
+        if (FileRead.imgColl.get(Image.curImage.getAbsolutePath()) != null && !FileRead.imgColl.get(Image.curImage.getAbsolutePath()).isEmpty()) {
+            arr = new String[FileRead.imgColl.get(Image.curImage.getAbsolutePath()).size()];
+            int i = 0;
+            for (String tag : FileRead.imgColl.get(Image.curImage.getAbsolutePath())) {
+                arr[i] = tag;
+                i++;
             }
+        }
         JList<String> l = new JList<>(arr);
         l.addListSelectionListener(e -> {
-            jd.dispose();
-            if(!l.getSelectedValue().equals("All files")){
-                Main.pictures = FileRead.getFilesCollection(l.getSelectedValue());
-            }else{
-                Main.pictures = FileRead.getFiles(Main.curPath);
-            }
+            if (!l.getSelectedValue().equals("none")) {
+                jd.dispose();
+                Main.i = 0;
 
+                view = 0;
+                view0.setState(true);
+                view1.setState(false);
+                Main.curFrame.remove(Main.firstView);
+                Main.curFrame.add(Main.label.first, BorderLayout.CENTER);
+                Main.curFrame.add(Main.label.third, BorderLayout.SOUTH);
+                Main.curFrame.pack();
+                Main.curFrame.setVisible(true);
+
+                Main.pictures = FileRead.getFilesCollection(l.getSelectedValue());
+                try {
+                    Main.curFrame.remove(Main.label.third);
+                    Main.label = Image.ParseImageF(Main.label.first, Main.pictures.get(Main.i).toString(), Main.x, Main.y);
+                    Main.curFrame.add(Main.label.third, BorderLayout.SOUTH);
+                    Main.curFrame.pack();
+                    Main.curFrame.setVisible(true);
+                } catch (IOException ex) {
+                    //System.out.println(ex.getStackTrace());
+                }
+            }
         });
         JScrollPane scrollPane = new JScrollPane();
         scrollPane.setViewportView(l);
@@ -347,8 +426,8 @@ public class Menu {
             ArrayList<String> toRemove = new ArrayList<>();
 
             for (String s : coll) {
-                if ((FileRead.imgData.second.get(Image.curImage.getAbsolutePath()) != null && !FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).isEmpty())) {
-                    if (FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).contains(s)) {
+                if ((FileRead.imgColl.get(Image.curImage.getAbsolutePath()) != null && !FileRead.imgColl.get(Image.curImage.getAbsolutePath()).isEmpty())) {
+                    if (FileRead.imgColl.get(Image.curImage.getAbsolutePath()).contains(s)) {
                         toRemove.add(s);
                     }
                 }
@@ -394,16 +473,16 @@ public class Menu {
 
     private static void writeCollection(String col) {
 
-        boolean isRecord = FileRead.imgData.second.containsKey(Image.curImage.getAbsolutePath());
+        boolean isRecord = FileRead.imgColl.containsKey(Image.curImage.getAbsolutePath());
         boolean isTag = false;
         if (isRecord) {
-            isTag = FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).contains(col);
+            isTag = FileRead.imgColl.get(Image.curImage.getAbsolutePath()).contains(col);
         }
 
         try {
             if (!isTag && !isRecord) {
                 BufferedWriter bw = new BufferedWriter(new FileWriter("src\\.ftcollections", true));
-                if (!FileRead.imgData.second.isEmpty()) {
+                if (!FileRead.imgColl.isEmpty()) {
                     bw.append('\n');
                 }
                 bw.append(Image.curImage.getAbsolutePath()).append(" Collections: ");
@@ -411,7 +490,7 @@ public class Menu {
                 bw.append(' ');
                 ArrayList<String> tags = new ArrayList<>();
                 tags.add(col);
-                FileRead.imgData.second.put(Image.curImage.getAbsolutePath(), tags);
+                FileRead.imgColl.put(Image.curImage.getAbsolutePath(), tags);
                 bw.close();
             } else if (!isTag) {
                 BufferedReader br = new BufferedReader(new FileReader("src\\.ftcollections"));
@@ -440,7 +519,7 @@ public class Menu {
 
                     bw.close();
 
-                    FileRead.imgData.second.get(Image.curImage.getAbsolutePath()).add(col);
+                    FileRead.imgColl.get(Image.curImage.getAbsolutePath()).add(col);
                 }
             }
 
@@ -494,10 +573,10 @@ public class Menu {
         JDialog jd = new JDialog(Main.curFrame);
         String[] arr = new String[1];
         arr[0] = "none";
-        if (FileRead.imgData.first.get(Image.curImage.getName()) != null && !FileRead.imgData.first.get(Image.curImage.getName()).isEmpty()) {
-            arr = new String[FileRead.imgData.first.get(Image.curImage.getName()).size()];
+        if (FileRead.imgTags.get(Image.curImage.getName()) != null && !FileRead.imgTags.get(Image.curImage.getName()).isEmpty()) {
+            arr = new String[FileRead.imgTags.get(Image.curImage.getName()).size()];
             int i = 0;
-            for (String tag : FileRead.imgData.first.get(Image.curImage.getName())) {
+            for (String tag : FileRead.imgTags.get(Image.curImage.getName())) {
                 arr[i] = tag;
                 i++;
             }
@@ -517,10 +596,10 @@ public class Menu {
         JDialog jd = new JDialog(Main.curFrame);
         String[] arr = new String[1];
         arr[0] = "none";
-        if (FileRead.imgData.first.get(Image.curImage.getName()) != null) {
-            arr = new String[FileRead.imgData.first.get(Image.curImage.getName()).size()];
+        if (FileRead.imgTags.get(Image.curImage.getName()) != null) {
+            arr = new String[FileRead.imgTags.get(Image.curImage.getName()).size()];
             int i = 0;
-            for (String tag : FileRead.imgData.first.get(Image.curImage.getName())) {
+            for (String tag : FileRead.imgTags.get(Image.curImage.getName())) {
                 arr[i] = tag;
                 i++;
             }
@@ -548,13 +627,13 @@ public class Menu {
 
                         if (pos != -1) {
 
-                            FileRead.imgData.first.get(Image.curImage.getName()).remove(tag);
+                            FileRead.imgTags.get(Image.curImage.getName()).remove(tag);
 
-                            if (!FileRead.imgData.first.get(Image.curImage.getName()).isEmpty()) {
+                            if (!FileRead.imgTags.get(Image.curImage.getName()).isEmpty()) {
                                 file.set(i, file.get(i).substring(0, pos - 1) + file.get(i).substring(pos + tag.length()));
                             } else {
                                 file.remove(i);
-                                FileRead.imgData.first.remove(Image.curImage.getName());
+                                FileRead.imgTags.remove(Image.curImage.getName());
                             }
 
 
@@ -694,16 +773,16 @@ public class Menu {
                     jt.setText("");
                     dial.dispose();
 
-                    boolean isRecord = FileRead.imgData.first.containsKey(Image.curImage.getName());
+                    boolean isRecord = FileRead.imgTags.containsKey(Image.curImage.getName());
                     boolean isTag = false;
                     if (isRecord) {
-                        isTag = FileRead.imgData.first.get(Image.curImage.getName()).contains(tag);
+                        isTag = FileRead.imgTags.get(Image.curImage.getName()).contains(tag);
                     }
 
                     try {
                         if (!isTag && !isRecord) {
                             BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedata", true));
-                            if (!FileRead.imgData.first.isEmpty()) {
+                            if (!FileRead.imgTags.isEmpty()) {
                                 bw.append('\n');
                             }
                             bw.append(Image.curImage.getName()).append(" Tags: ");
@@ -711,7 +790,7 @@ public class Menu {
                             bw.append(' ');
                             ArrayList<String> tags = new ArrayList<>();
                             tags.add(tag);
-                            FileRead.imgData.first.put(Image.curImage.getName(), tags);
+                            FileRead.imgTags.put(Image.curImage.getName(), tags);
                             bw.close();
                         } else if (!isTag) {
                             BufferedReader br = new BufferedReader(new FileReader(Main.curPath + "\\.fasttomedata"));
@@ -740,7 +819,7 @@ public class Menu {
 
                                 bw.close();
 
-                                FileRead.imgData.first.get(Image.curImage.getName()).add(tag);
+                                FileRead.imgTags.get(Image.curImage.getName()).add(tag);
                             }
                         }
 
