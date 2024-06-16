@@ -3,6 +3,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.Map;
@@ -56,25 +57,51 @@ public class FileRead {
             imgTags = imgData.first;
             imgColl = imgData.second;
             imgDesc = imgData.third;
+
+            imgDate = new HashMap<>();
+            for (File f : pictures) {
+                imgDate.put(f.getName(), getCreationDate(f));
+            }
+
         }
 
         try {
-            if(!(Boolean)Files.getAttribute(Path.of(data.getPath()), "dos:hidden")){
+            if (!(Boolean) Files.getAttribute(Path.of(data.getPath()), "dos:hidden")) {
                 Files.setAttribute(Path.of(data.getPath()), "dos:hidden", true);
             }
 
-            if(!(Boolean)Files.getAttribute(Path.of(collections.getPath()), "dos:hidden")){
+            if (!(Boolean) Files.getAttribute(Path.of(collections.getPath()), "dos:hidden")) {
                 Files.setAttribute(Path.of(collections.getPath()), "dos:hidden", true);
             }
 
-            if(!(Boolean)Files.getAttribute(Path.of(descriptions.getPath()), "dos:hidden")){
+            if (!(Boolean) Files.getAttribute(Path.of(descriptions.getPath()), "dos:hidden")) {
                 Files.setAttribute(Path.of(descriptions.getPath()), "dos:hidden", true);
             }
-        }catch(IOException ioex){
+        } catch (IOException ioex) {
             //System.out.println(ioex.getStackTrace());
         }
 
         return pictures;
+    }
+
+    public static FileTime getCreationDate(File file) {
+        FileTime ft = FileTime.from(0, TimeUnit.MILLISECONDS);
+        try {
+            ft = (FileTime) Files.getAttribute(Path.of(file.getAbsolutePath()), "creationTime");
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+        return ft;
+    }
+
+    public static FileTime getCreationDate(String file) {
+        FileTime ft = FileTime.from(0, TimeUnit.MILLISECONDS);
+        try {
+            ft = (FileTime) Files.getAttribute(Path.of(file), "creationTime");
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+        return ft;
     }
 
     public static List<File> getFilesCollection(String collection) {
@@ -83,18 +110,18 @@ public class FileRead {
 
         Set<Map.Entry<String, ArrayList<String>>> dbEntries = getCollections().entrySet();
 
-        for(Map.Entry<String, ArrayList<String>> n : dbEntries){
-            if(n.getValue().contains(collection)){
+        for (Map.Entry<String, ArrayList<String>> n : dbEntries) {
+            if (n.getValue().contains(collection)) {
                 pictures.add(new File(n.getKey()));
             }
         }
 
-        ArrayList <Triple<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>, Map<String, String>>> colData = new ArrayList<>();
+        ArrayList<Triple<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>, Map<String, String>>> colData = new ArrayList<>();
 
         HashSet<String> dirs = new HashSet<>();
 
-        for(File f : pictures){
-            dirs.add(f.getPath().substring(0,f.getPath().length()-f.getName().length()));
+        for (File f : pictures) {
+            dirs.add(f.getPath().substring(0, f.getPath().length() - f.getName().length()));
         }
 
         String[] arr = new String[dirs.size()];
@@ -106,32 +133,35 @@ public class FileRead {
             i++;
         }
 
-        for(String path : arr){
-           colData.add(readData(path));
+        for (String path : arr) {
+            colData.add(readData(path));
         }
 
         imgTags.clear();
         imgColl.clear();
+        imgDesc.clear();
+        imgDate.clear();
 
-        for(Triple<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>, Map<String, String>> p : colData) {
-            for (String entry : p.first.keySet()){
-                for (File f : pictures){
-                    if (f.getName().equals(entry)){
-                        imgTags.put(entry,p.first.get(entry));
+        for (Triple<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>, Map<String, String>> p : colData) {
+            for (String entry : p.first.keySet()) {
+                for (File f : pictures) {
+                    if (f.getName().equals(entry)) {
+                        imgTags.put(entry, p.first.get(entry));
                     }
                 }
             }
 
-            for (String entry : p.second.keySet()){
-                if(pictures.contains(new File(entry))){
+            for (String entry : p.second.keySet()) {
+                if (pictures.contains(new File(entry))) {
                     imgColl.put(entry, p.second.get(entry));
+                    imgDate.put(entry,getCreationDate(entry));
                 }
             }
 
-            for (String entry : p.third.keySet()){
-                for (File f : pictures){
-                    if (f.getName().equals(entry)){
-                        imgDesc.put(entry,p.third.get(entry));
+            for (String entry : p.third.keySet()) {
+                for (File f : pictures) {
+                    if (f.getName().equals(entry)) {
+                        imgDesc.put(entry, p.third.get(entry));
                     }
                 }
             }
@@ -145,6 +175,7 @@ public class FileRead {
         Map<String, String> descriptions = new HashMap<>();
 
         try {
+
             BufferedReader br = new BufferedReader(new FileReader(path + ".fasttomedata"));
             String buf;
             ArrayList<String> ab;
@@ -163,8 +194,10 @@ public class FileRead {
                 tags.put(buf.substring(0, buf.indexOf(" ")), ab);
             }
             br.close();
+
         } catch (IOException e) {
-            System.out.println(e.getStackTrace() + " Metadata file wasn't found");
+            e.printStackTrace();
+            System.out.println(" Metadata file wasn't found");
         }
 
         collections = getCollections();
@@ -174,28 +207,26 @@ public class FileRead {
             String buf;
             ArrayList<String> ab;
             int i = 0;
-            int c = 0;
             while (br.ready()) {
                 buf = br.readLine();
-                i = buf.indexOf("Description:") + 12;
-                c = i;
-                while (c != buf.length() - 1) {
-                    i = c + 1;
-                    c = buf.indexOf(" ", c + 1);
-                }
-                descriptions.put(buf.substring(0, buf.indexOf(" ")), buf);
+                i = buf.indexOf("Description:") + 13;
+                descriptions.put(buf.substring(0, buf.indexOf(" ")), buf.substring(i));
             }
             br.close();
         } catch (IOException e) {
-            System.out.println(e.getStackTrace() + " Metadata file wasn't found");
+            e.printStackTrace();
+            System.out.println(" Description file wasn't found");
         }
 
         return new Triple<>(tags, collections, descriptions);
     }
 
-    public static HashMap<String,ArrayList<String>> getCollections(){
-        HashMap<String,ArrayList<String>> collections = new HashMap<>();
+    public static HashMap<String, ArrayList<String>> getCollections() {
+        HashMap<String, ArrayList<String>> collections = new HashMap<>();
         try {
+            if ((Boolean) Files.getAttribute(Path.of("src\\.ftcollections"), "dos:hidden")) {
+                Files.setAttribute(Path.of("src\\.ftcollections"), "dos:hidden", false);
+            }
             BufferedReader bc = new BufferedReader(new FileReader("src\\.ftcollections"));
             String buf;
             ArrayList<String> ab;
@@ -213,8 +244,12 @@ public class FileRead {
                 collections.put(buf.substring(0, buf.indexOf(" ")), ab);
             }
             bc.close();
+            if (!(Boolean) Files.getAttribute(Path.of("src\\.ftcollections"), "dos:hidden")) {
+                Files.setAttribute(Path.of("src\\.ftcollections"), "dos:hidden", true);
+            }
         } catch (IOException e) {
-            System.out.println(e.getStackTrace() + " Collections file wasn't found");
+            e.printStackTrace();
+            System.out.println(" Collections file wasn't found");
         }
         return collections;
     }
@@ -237,6 +272,11 @@ public class FileRead {
         if (imgTags.containsKey(a.getName())) {
 
             try {
+
+                if ((Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden")) {
+                    Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden", false);
+                }
+
                 BufferedReader br = new BufferedReader(new FileReader(Main.curPath + "\\.fasttomedata"));
                 ArrayList<String> file = new ArrayList<>();
                 int i = -1;
@@ -263,6 +303,10 @@ public class FileRead {
 
                     bw.close();
                 }
+
+                if (!(Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden")) {
+                    Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden", true);
+                }
             } catch (IOException ex) {
                 System.out.println(ex.getMessage());
             }
@@ -272,9 +316,13 @@ public class FileRead {
             imgTags.remove(a.getName());
         }
 
-        if (imgColl.containsKey(a.getName())) {
+        if (imgColl.containsKey(a.getAbsolutePath())) {
 
             try {
+                if ((Boolean) Files.getAttribute(Path.of("src\\.ftcollections"), "dos:hidden")) {
+                    Files.setAttribute(Path.of("src\\.ftcollections"), "dos:hidden", false);
+                }
+
                 BufferedReader br = new BufferedReader(new FileReader("src\\.ftcollections"));
                 ArrayList<String> file = new ArrayList<>();
                 int i = -1;
@@ -301,6 +349,11 @@ public class FileRead {
 
                     bw.close();
                 }
+
+                if (!(Boolean) Files.getAttribute(Path.of("src\\.ftcollections"), "dos:hidden")) {
+                    Files.setAttribute(Path.of("src\\.ftcollections"), "dos:hidden", true);
+                }
+
             } catch (IOException ex) {
                 System.out.println(ex.getMessage());
             }
@@ -310,6 +363,57 @@ public class FileRead {
             imgColl.remove(a.getAbsolutePath());
         }
 
+        if (imgDesc.containsKey(a.getName())) {
+
+            try {
+
+                if ((Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedesc"), "dos:hidden")) {
+                    Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedesc"), "dos:hidden", false);
+                }
+
+                BufferedReader br = new BufferedReader(new FileReader(Main.curPath + "\\.fasttomedesc"));
+                ArrayList<String> file = new ArrayList<>();
+                int i = -1;
+                while (br.ready()) {
+                    file.add(br.readLine());
+                    if (file.get(file.size() - 1).startsWith(a.getName())) {
+                        i = file.size() - 1;
+                    }
+                }
+                br.close();
+                if (i != -1) {
+                    file.set(i, r.getName() + file.get(i).substring(file.get(i).indexOf(' ')));
+
+                    BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedesc"));
+
+                    bw.write("");
+
+                    for (String s : file) {
+                        if (!s.isEmpty() && !s.equals(" ")) {
+                            bw.append(s);
+                            bw.append('\n');
+                        }
+                    }
+
+                    bw.close();
+                }
+
+                if (!(Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedesc"), "dos:hidden")) {
+                    Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedesc"), "dos:hidden", true);
+                }
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+            }
+
+
+            imgDesc.put(r.getName(), imgDesc.get(a.getName()));
+            imgDesc.remove(a.getName());
+        }
+
+        if(imgDate.containsKey(a.getName())){
+            imgDate.put(r.getName(),imgDate.get(a.getName()));
+            imgDate.remove(a.getName());
+        }
 
         return new Pair<>(a.renameTo(r), r);
     }

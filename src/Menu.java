@@ -4,6 +4,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -48,6 +50,7 @@ public class Menu {
         JMenuItem rename1 = new JMenuItem("Rename");
         JMenuItem addTag = new JMenuItem("Add tag");
         JMenuItem tags = new JMenuItem("Tags");
+        JMenuItem date = new JMenuItem("Date");
         JMenuItem removeTag = new JMenuItem("Remove tag");
         JMenuItem description = new JMenuItem("Description");
         JMenuItem descriptionEdit = new JMenuItem("Description");
@@ -66,9 +69,10 @@ public class Menu {
         edit.add(removeFrom);
         edit.add(descriptionEdit);
 
-        info.add(description);
         info.add(collections);
         info.add(tags);
+        info.add(description);
+        info.add(date);
 
         search.add(filterBy);
 
@@ -81,6 +85,8 @@ public class Menu {
         addTag.addActionListener(e -> writeTagToFile()); //add tag
 
         tags.addActionListener(e -> viewTagDial()); //view tags
+
+        date.addActionListener(e -> viewDate());
 
         removeTag.addActionListener(e -> removeTagDial()); //remove a tag
 
@@ -103,6 +109,29 @@ public class Menu {
         jMenuBar.add(search);
 
         return jMenuBar;
+    }
+
+    private static void viewDate() {
+        JDialog jd = new JDialog(Main.curFrame);
+        String date = "No date found";
+
+        if (FileRead.imgDate.get(Image.curImage.getName()) != null && FileRead.imgDate.get(Image.curImage.getName())!=null) {
+            date = FileRead.imgDate.get(Image.curImage.getName()).toString();
+            date = date.substring(0,date.indexOf('.'));
+            date = date.replace('T',' ');
+        }
+
+        JLabel text = new JLabel(date);
+        text.setPreferredSize(new Dimension(160, 60));
+        text.setHorizontalTextPosition(SwingConstants.CENTER);
+        text.setVerticalTextPosition(SwingConstants.CENTER);
+        text.setHorizontalAlignment(SwingConstants.CENTER);
+        text.setVerticalAlignment(SwingConstants.CENTER);
+        jd.add(text);
+        jd.setSize(new Dimension(160, 60));
+        jd.setPreferredSize(new Dimension(160, 60));
+        jd.setVisible(true);
+        jd.requestFocus();
     }
 
     private static void openColDialog() {
@@ -176,7 +205,7 @@ public class Menu {
         JTextArea jt = new JTextArea();
         if (FileRead.imgDesc.containsKey(Image.curImage.getName())) {
             if (!FileRead.imgDesc.get(Image.curImage.getName()).isEmpty()) {
-                jt.setText(FileRead.imgDesc.get(Image.curImage.getName()));
+                jt.setText(FileRead.imgDesc.get(Image.curImage.getName()).replace('/','\n'));
             }
         }
         jt.setPreferredSize(new Dimension(260, 240));
@@ -207,6 +236,11 @@ public class Menu {
                     }
 
                     try {
+
+                        if((Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedesc"), "dos:hidden")){
+                            Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedesc"), "dos:hidden", false);
+                        }
+
                         if (!isDescription && !isRecord) {
                             BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedesc", true));
                             if (!FileRead.imgDesc.isEmpty()) {
@@ -214,7 +248,6 @@ public class Menu {
                             }
                             bw.append(Image.curImage.getName()).append(" Description: ");
                             bw.append(description);
-                            bw.append(' ');
                             FileRead.imgDesc.put(Image.curImage.getName(), description);
                             bw.close();
                         } else if (!isDescription) {
@@ -229,7 +262,7 @@ public class Menu {
                             }
                             br.close();
                             if (i != -1) {
-                                file.set(i, description);
+                                file.set(i, Image.curImage.getName() + " Description: " + description);
 
                                 BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedesc"));
 
@@ -248,8 +281,12 @@ public class Menu {
                             }
                         }
 
+                        if(!(Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedesc"), "dos:hidden")){
+                            Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedesc"), "dos:hidden", true);
+                        }
+
                     } catch (IOException ex) {
-                        System.out.println(ex.getStackTrace());
+                        ex.printStackTrace();
                     }
                 }
             }
@@ -266,8 +303,22 @@ public class Menu {
         dial.setVisible(true);
     }
 
-    private static void viewDescription() { // todo
+    private static void viewDescription() {
+        JDialog jd = new JDialog(Main.curFrame);
+        String description = "No description yet";
 
+        if (FileRead.imgDesc.get(Image.curImage.getName()) != null && !FileRead.imgDesc.get(Image.curImage.getName()).isEmpty()) {
+            description = FileRead.imgDesc.get(Image.curImage.getName());
+        }
+
+        String visualText = description.replace('/','\n');
+
+        JTextArea text = new JTextArea(visualText);
+        jd.add(text);
+        jd.setSize(new Dimension(200, 40 + 20 * (int)visualText.lines().count()));
+        jd.setPreferredSize(new Dimension(200, 40 + 20 * (int)visualText.lines().count()));
+        jd.setVisible(true);
+        jd.requestFocus();
     }
 
     private static void removeColDial() {
@@ -287,6 +338,11 @@ public class Menu {
         l.addListSelectionListener(e1 -> {
             if (!l.getSelectedValue().equals("none")) {
                 try {
+
+                    if((Boolean) Files.getAttribute(Path.of("src\\.ftcollections"), "dos:hidden")){
+                        Files.setAttribute(Path.of("src\\.ftcollections"), "dos:hidden", false);
+                    }
+
                     String tag = l.getSelectedValue();
                     jd.dispose();
                     BufferedReader br = new BufferedReader(new FileReader("src\\.ftcollections"));
@@ -334,6 +390,10 @@ public class Menu {
                             bw.close();
                         }
 
+                    }
+
+                    if(!(Boolean) Files.getAttribute(Path.of("\\.ftcollections"), "dos:hidden")){
+                        Files.setAttribute(Path.of("\\.ftcollections"), "dos:hidden", true);
                     }
 
                 } catch (IOException ex) {
@@ -407,6 +467,11 @@ public class Menu {
         arr[0] = "New collection";
 
         try {
+
+            if((Boolean) Files.getAttribute(Path.of("src\\.ftcollections"), "dos:hidden")){
+                Files.setAttribute(Path.of("src\\.ftcollections"), "dos:hidden", false);
+            }
+
             BufferedReader bc = new BufferedReader(new FileReader("src\\.ftcollections"));
             String buf;
             HashSet<String> coll = new HashSet<>();
@@ -446,8 +511,13 @@ public class Menu {
                 i++;
             }
 
+            if(!(Boolean) Files.getAttribute(Path.of("src\\.ftcollections"), "dos:hidden")){
+                Files.setAttribute(Path.of("src\\.ftcollections"), "dos:hidden", true);
+            }
+
         } catch (IOException e) {
-            System.out.println(e.getStackTrace() + " Collections file wasn't found");
+            e.printStackTrace();
+            System.out.println(" Collections file wasn't found");
         }
 
         JList<String> l = new JList<>(arr);
@@ -480,6 +550,11 @@ public class Menu {
         }
 
         try {
+
+            if((Boolean) Files.getAttribute(Path.of("src\\.ftcollections"), "dos:hidden")){
+                Files.setAttribute(Path.of("src\\.ftcollections"), "dos:hidden", false);
+            }
+
             if (!isTag && !isRecord) {
                 BufferedWriter bw = new BufferedWriter(new FileWriter("src\\.ftcollections", true));
                 if (!FileRead.imgColl.isEmpty()) {
@@ -521,10 +596,15 @@ public class Menu {
 
                     FileRead.imgColl.get(Image.curImage.getAbsolutePath()).add(col);
                 }
+
+                if(!(Boolean) Files.getAttribute(Path.of( "src\\.ftcollections"), "dos:hidden")){
+                    Files.setAttribute(Path.of("src\\.ftcollections"), "dos:hidden", true);
+                }
+
             }
 
         } catch (IOException ex) {
-            System.out.println(ex.getStackTrace());
+            ex.printStackTrace();
         }
     }
 
@@ -609,6 +689,9 @@ public class Menu {
         l.addListSelectionListener(e1 -> {
             if (!l.getSelectedValue().equals("none")) {
                 try {
+                    if((Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden")){
+                        Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden", false);
+                    }
                     String tag = l.getSelectedValue();
                     jd.dispose();
                     BufferedReader br = new BufferedReader(new FileReader(Main.curPath + "\\.fasttomedata"));
@@ -656,6 +739,10 @@ public class Menu {
                             bw.close();
                         }
 
+                    }
+
+                    if(!(Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden")){
+                        Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden", true);
                     }
 
                 } catch (IOException ex) {
@@ -717,6 +804,7 @@ public class Menu {
         dial.add(l, BorderLayout.NORTH);
 
         JTextArea jt = new JTextArea();
+        jt.setText(Image.curImage.getName());
         jt.setPreferredSize(new Dimension(100, 80));
         jt.setEditable(true);
         dial.add(jt, BorderLayout.CENTER);
@@ -780,6 +868,11 @@ public class Menu {
                     }
 
                     try {
+
+                        if((Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden")){
+                            Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden", false);
+                        }
+
                         if (!isTag && !isRecord) {
                             BufferedWriter bw = new BufferedWriter(new FileWriter(Main.curPath + "\\.fasttomedata", true));
                             if (!FileRead.imgTags.isEmpty()) {
@@ -823,8 +916,12 @@ public class Menu {
                             }
                         }
 
+                        if(!(Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden")){
+                            Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden", true);
+                        }
+
                     } catch (IOException ex) {
-                        System.out.println(ex.getStackTrace());
+                        ex.printStackTrace();
                     }
                 }
             }

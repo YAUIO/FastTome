@@ -135,6 +135,7 @@ public class Main {
             if(!Menu.rename.equals("none")){
                 Pair<Boolean, File> r = FileRead.rename(pictures.get(i));
                 pictures.set(i,r.second);
+                Image.curImage = pictures.get(i);
                 label.third.setText(r.second.getName());
                 if(!r.first){
                     JOptionPane.showMessageDialog(curFrame, "File exists",
