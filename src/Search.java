@@ -196,8 +196,6 @@ public class Search {
                         .filter(pred)
                         .toList());
 
-                System.out.println(filteredPhotos);
-
                 buf.clear();
 
             }
@@ -247,6 +245,9 @@ public class Search {
                 //System.out.println(ex.getStackTrace());
             }
 
+        }else if(conditions.isEmpty()){
+            JOptionPane.showMessageDialog(Main.curFrame, "Wrong input",
+                    "Search error", JOptionPane.ERROR_MESSAGE);
         }else{
             JOptionPane.showMessageDialog(Main.curFrame, "No such photos in current scope",
                     "Search error", JOptionPane.ERROR_MESSAGE);
