@@ -30,6 +30,7 @@ public class Main {
         curFrame.setPreferredSize(new Dimension(x,y));
         curFrame.setLayout(new BorderLayout());
         curFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        curFrame.setLocationRelativeTo(null);
         String curKey = KeyListenerMenu.key;
         if(!pictures.isEmpty()) {
             label = Image.ParseImageF(label.first, pictures.get(i).toString(), x, y);

@@ -1,5 +1,6 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.File;
@@ -36,7 +37,7 @@ public class Image {
             newHeight = (int) (newHeight * multiplier);
         }
 
-        img = org.imgscalr.Scalr.resize(img, org.imgscalr.Scalr.Method.BALANCED, newWidth, newHeight); //https://github.com/rkalla/imgscalr
+        img = rescaleImg(img,newWidth,newHeight);
         curImage = imageF;
         origImage = img;
         ImageIcon icon = new ImageIcon(img);
@@ -52,6 +53,14 @@ public class Image {
         return new Triple<>(lbl, img, text);
     }
 
+    private static BufferedImage rescaleImg(BufferedImage img, int newWidth, int newHeight){
+        BufferedImage out = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D buf = out.createGraphics();
+        buf.drawImage(img, 0, 0, newWidth, newHeight, null);
+        buf.dispose();
+        return out;
+    }
+
     public static Triple<JLabel, BufferedImage, JLabel> reScale(String mode, Triple<JLabel, BufferedImage, JLabel> img) {
         int newWidth = img.second.getWidth();
         int newHeight = img.second.getHeight();
@@ -63,7 +72,7 @@ public class Image {
             newWidth = (int) (newWidth / multiplier);
             newHeight = (int) (newHeight / multiplier);
         }
-        img.second = org.imgscalr.Scalr.resize(origImage, org.imgscalr.Scalr.Method.BALANCED, newWidth, newHeight); //https://github.com/rkalla/imgscalr
+        img.second = rescaleImg(origImage, newWidth, newHeight);
         ImageIcon icon = new ImageIcon(img.second);
         img.first.setIcon(icon);
         img.first.setSize(newWidth, newHeight);
