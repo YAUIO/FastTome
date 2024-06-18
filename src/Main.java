@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
@@ -11,7 +12,7 @@ public class Main {
     static JFrame curFrame;
     static String curPath;
     static int i = 0;
-    static List<File> pictures;
+    static ArrayList<File> pictures;
     static Triple<JLabel, BufferedImage, JLabel> label;
     static JScrollPane firstView;
 

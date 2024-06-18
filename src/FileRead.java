@@ -14,7 +14,7 @@ public class FileRead {
     static Map<String, String> imgDesc;
     static Map<String, FileTime> imgDate;
 
-    public static List<File> getFiles(String path) {
+    public static ArrayList<File> getFiles(String path) {
         path += "\\";
 
         List<File> pictures = new ArrayList<>();
@@ -81,7 +81,7 @@ public class FileRead {
             //System.out.println(ioex.getStackTrace());
         }
 
-        return pictures;
+        return (ArrayList<File>) pictures;
     }
 
     public static FileTime getCreationDate(File file) {
@@ -104,9 +104,9 @@ public class FileRead {
         return ft;
     }
 
-    public static List<File> getFilesCollection(String collection) {
+    public static ArrayList<File> getFilesCollection(String collection) {
 
-        List<File> pictures = new ArrayList<>();
+        ArrayList<File> pictures = new ArrayList<>();
 
         Set<Map.Entry<String, ArrayList<String>>> dbEntries = getCollections().entrySet();
 
