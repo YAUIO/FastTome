@@ -55,6 +55,7 @@ public class Search {
         dial.setSize(new Dimension(260, 80));
         dial.setPreferredSize(new Dimension(260, 80));
         dial.pack();
+        dial.setLocationRelativeTo(Main.curFrame);
         dial.setVisible(true);
     }
 

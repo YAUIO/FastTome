@@ -130,6 +130,7 @@ public class Menu {
         jd.add(text);
         jd.setSize(new Dimension(160, 60));
         jd.setPreferredSize(new Dimension(160, 60));
+        jd.setLocationRelativeTo(Main.curFrame);
         jd.setVisible(true);
         jd.requestFocus();
     }
@@ -189,6 +190,7 @@ public class Menu {
         jd.add(scrollPane);
         jd.setSize(new Dimension(200, 40 + 20 * arr.length));
         jd.setPreferredSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setLocationRelativeTo(Main.curFrame);
         jd.setVisible(true);
         jd.requestFocus();
     }
@@ -299,6 +301,7 @@ public class Menu {
 
         dial.setSize(new Dimension(260, 240));
         dial.setPreferredSize(new Dimension(260, 240));
+        dial.setLocationRelativeTo(Main.curFrame);
         dial.pack();
         dial.setVisible(true);
     }
@@ -317,6 +320,7 @@ public class Menu {
         jd.add(text);
         jd.setSize(new Dimension(200, 40 + 20 * (int)visualText.lines().count()));
         jd.setPreferredSize(new Dimension(200, 40 + 20 * (int)visualText.lines().count()));
+        jd.setLocationRelativeTo(Main.curFrame);
         jd.setVisible(true);
         jd.requestFocus();
     }
@@ -408,6 +412,7 @@ public class Menu {
         jd.add(scrollPane);
         jd.setSize(new Dimension(200, 40 + 20 * arr.length));
         jd.setPreferredSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setLocationRelativeTo(Main.curFrame);
         jd.setVisible(true);
         jd.requestFocus();
     }
@@ -457,6 +462,7 @@ public class Menu {
         jd.add(scrollPane);
         jd.setSize(new Dimension(200, 40 + 20 * arr.length));
         jd.setPreferredSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setLocationRelativeTo(Main.curFrame);
         jd.setVisible(true);
         jd.requestFocus();
     }
@@ -537,6 +543,7 @@ public class Menu {
         jd.add(scrollPane);
         jd.setSize(new Dimension(200, 40 + 20 * arr.length));
         jd.setPreferredSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setLocationRelativeTo(Main.curFrame);
         jd.setVisible(true);
         jd.requestFocus();
     }
@@ -645,6 +652,7 @@ public class Menu {
 
         dial.setSize(new Dimension(260, 80));
         dial.setPreferredSize(new Dimension(260, 80));
+        dial.setLocationRelativeTo(Main.curFrame);
         dial.pack();
         dial.setVisible(true);
     }
@@ -668,6 +676,7 @@ public class Menu {
         jd.add(scrollPane);
         jd.setSize(new Dimension(200, 40 + 20 * arr.length));
         jd.setPreferredSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setLocationRelativeTo(Main.curFrame);
         jd.setVisible(true);
         jd.requestFocus();
     }
@@ -757,6 +766,7 @@ public class Menu {
         jd.add(scrollPane);
         jd.setSize(new Dimension(200, 40 + 20 * arr.length));
         jd.setPreferredSize(new Dimension(200, 40 + 20 * arr.length));
+        jd.setLocationRelativeTo(Main.curFrame);
         jd.setVisible(true);
         jd.requestFocus();
     }
@@ -788,6 +798,8 @@ public class Menu {
         jFileChooser.setSize(400, 400);
 
         JDialog dialog = new JDialog();
+
+        dialog.setLocationRelativeTo(Main.curFrame);
 
         jFileChooser.showOpenDialog(dialog);
 
@@ -831,6 +843,7 @@ public class Menu {
 
         dial.setSize(new Dimension(200, 80));
         dial.setPreferredSize(new Dimension(200, 80));
+        dial.setLocationRelativeTo(Main.curFrame);
         dial.pack();
         dial.setVisible(true);
     }
@@ -934,6 +947,7 @@ public class Menu {
 
         dial.setSize(new Dimension(260, 80));
         dial.setPreferredSize(new Dimension(260, 80));
+        dial.setLocationRelativeTo(Main.curFrame);
         dial.pack();
         dial.setVisible(true);
     }
