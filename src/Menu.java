@@ -115,10 +115,10 @@ public class Menu {
         JDialog jd = new JDialog(Main.curFrame);
         String date = "No date found";
 
-        if (FileRead.imgDate.get(Image.curImage.getName()) != null && FileRead.imgDate.get(Image.curImage.getName())!=null) {
+        if (FileRead.imgDate.get(Image.curImage.getName()) != null && FileRead.imgDate.get(Image.curImage.getName()) != null) {
             date = FileRead.imgDate.get(Image.curImage.getName()).toString();
-            date = date.substring(0,date.indexOf('.'));
-            date = date.replace('T',' ');
+            date = date.substring(0, date.indexOf('.'));
+            date = date.replace('T', ' ');
         }
 
         JLabel text = new JLabel(date);
@@ -170,15 +170,13 @@ public class Menu {
                 Main.curFrame.setVisible(true);
 
                 Main.pictures = FileRead.getFilesCollection(l.getSelectedValue());
-                try {
-                    Main.curFrame.remove(Main.label.third);
-                    Main.label = Image.ParseImageF(Main.label.first, Main.pictures.get(Main.i).toString(), Main.x, Main.y);
-                    Main.curFrame.add(Main.label.third, BorderLayout.SOUTH);
-                    Main.curFrame.pack();
-                    Main.curFrame.setVisible(true);
-                } catch (IOException ex) {
-                    //System.out.println(ex.getStackTrace());
-                }
+
+                Main.curFrame.remove(Main.label.third);
+                Main.label = Image.ParseImageF(Main.label.first, Main.pictures.get(Main.i).toString(), Main.x, Main.y);
+                Main.curFrame.add(Main.label.third, BorderLayout.SOUTH);
+                Main.curFrame.pack();
+                Main.curFrame.setVisible(true);
+
             } else {
                 Main.pictures = FileRead.getFiles(Main.curPath);
             }
@@ -207,7 +205,7 @@ public class Menu {
         JTextArea jt = new JTextArea();
         if (FileRead.imgDesc.containsKey(Image.curImage.getName())) {
             if (!FileRead.imgDesc.get(Image.curImage.getName()).isEmpty()) {
-                jt.setText(FileRead.imgDesc.get(Image.curImage.getName()).replace('/','\n'));
+                jt.setText(FileRead.imgDesc.get(Image.curImage.getName()).replace('/', '\n'));
             }
         }
         jt.setPreferredSize(new Dimension(260, 240));
@@ -239,7 +237,7 @@ public class Menu {
 
                     try {
 
-                        if((Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedesc"), "dos:hidden")){
+                        if ((Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedesc"), "dos:hidden")) {
                             Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedesc"), "dos:hidden", false);
                         }
 
@@ -283,12 +281,13 @@ public class Menu {
                             }
                         }
 
-                        if(!(Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedesc"), "dos:hidden")){
+                        if (!(Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedesc"), "dos:hidden")) {
                             Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedesc"), "dos:hidden", true);
                         }
 
                     } catch (IOException ex) {
-                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(Main.curFrame, ex.getMessage(),
+                                "I/O error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
@@ -314,12 +313,12 @@ public class Menu {
             description = FileRead.imgDesc.get(Image.curImage.getName());
         }
 
-        String visualText = description.replace('/','\n');
+        String visualText = description.replace('/', '\n');
 
         JTextArea text = new JTextArea(visualText);
         jd.add(text);
-        jd.setSize(new Dimension(200, 40 + 20 * (int)visualText.lines().count()));
-        jd.setPreferredSize(new Dimension(200, 40 + 20 * (int)visualText.lines().count()));
+        jd.setSize(new Dimension(200, 40 + 20 * (int) visualText.lines().count()));
+        jd.setPreferredSize(new Dimension(200, 40 + 20 * (int) visualText.lines().count()));
         jd.setLocationRelativeTo(Main.curFrame);
         jd.setVisible(true);
         jd.requestFocus();
@@ -343,7 +342,7 @@ public class Menu {
             if (!l.getSelectedValue().equals("none")) {
                 try {
 
-                    if((Boolean) Files.getAttribute(Path.of("src\\.ftcollections"), "dos:hidden")){
+                    if ((Boolean) Files.getAttribute(Path.of("src\\.ftcollections"), "dos:hidden")) {
                         Files.setAttribute(Path.of("src\\.ftcollections"), "dos:hidden", false);
                     }
 
@@ -396,12 +395,13 @@ public class Menu {
 
                     }
 
-                    if(!(Boolean) Files.getAttribute(Path.of("\\.ftcollections"), "dos:hidden")){
+                    if (!(Boolean) Files.getAttribute(Path.of("\\.ftcollections"), "dos:hidden")) {
                         Files.setAttribute(Path.of("\\.ftcollections"), "dos:hidden", true);
                     }
 
                 } catch (IOException ex) {
-                    //System.out.println(ex.getMessage());
+                    JOptionPane.showMessageDialog(Main.curFrame, ex.getMessage(),
+                            "I/O error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -445,15 +445,13 @@ public class Menu {
                 Main.curFrame.setVisible(true);
 
                 Main.pictures = FileRead.getFilesCollection(l.getSelectedValue());
-                try {
-                    Main.curFrame.remove(Main.label.third);
-                    Main.label = Image.ParseImageF(Main.label.first, Main.pictures.get(Main.i).toString(), Main.x, Main.y);
-                    Main.curFrame.add(Main.label.third, BorderLayout.SOUTH);
-                    Main.curFrame.pack();
-                    Main.curFrame.setVisible(true);
-                } catch (IOException ex) {
-                    //System.out.println(ex.getStackTrace());
-                }
+
+                Main.curFrame.remove(Main.label.third);
+                Main.label = Image.ParseImageF(Main.label.first, Main.pictures.get(Main.i).toString(), Main.x, Main.y);
+                Main.curFrame.add(Main.label.third, BorderLayout.SOUTH);
+                Main.curFrame.pack();
+                Main.curFrame.setVisible(true);
+
             }
         });
         JScrollPane scrollPane = new JScrollPane();
@@ -474,7 +472,7 @@ public class Menu {
 
         try {
 
-            if((Boolean) Files.getAttribute(Path.of("src\\.ftcollections"), "dos:hidden")){
+            if ((Boolean) Files.getAttribute(Path.of("src\\.ftcollections"), "dos:hidden")) {
                 Files.setAttribute(Path.of("src\\.ftcollections"), "dos:hidden", false);
             }
 
@@ -517,13 +515,13 @@ public class Menu {
                 i++;
             }
 
-            if(!(Boolean) Files.getAttribute(Path.of("src\\.ftcollections"), "dos:hidden")){
+            if (!(Boolean) Files.getAttribute(Path.of("src\\.ftcollections"), "dos:hidden")) {
                 Files.setAttribute(Path.of("src\\.ftcollections"), "dos:hidden", true);
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println(" Collections file wasn't found");
+            JOptionPane.showMessageDialog(Main.curFrame, e.getMessage(),
+                    "I/O error", JOptionPane.ERROR_MESSAGE);
         }
 
         JList<String> l = new JList<>(arr);
@@ -558,7 +556,7 @@ public class Menu {
 
         try {
 
-            if((Boolean) Files.getAttribute(Path.of("src\\.ftcollections"), "dos:hidden")){
+            if ((Boolean) Files.getAttribute(Path.of("src\\.ftcollections"), "dos:hidden")) {
                 Files.setAttribute(Path.of("src\\.ftcollections"), "dos:hidden", false);
             }
 
@@ -604,14 +602,15 @@ public class Menu {
                     FileRead.imgColl.get(Image.curImage.getAbsolutePath()).add(col);
                 }
 
-                if(!(Boolean) Files.getAttribute(Path.of( "src\\.ftcollections"), "dos:hidden")){
+                if (!(Boolean) Files.getAttribute(Path.of("src\\.ftcollections"), "dos:hidden")) {
                     Files.setAttribute(Path.of("src\\.ftcollections"), "dos:hidden", true);
                 }
 
             }
 
         } catch (IOException ex) {
-            ex.printStackTrace();
+            JOptionPane.showMessageDialog(Main.curFrame, ex.getMessage(),
+                    "I/O error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -698,7 +697,7 @@ public class Menu {
         l.addListSelectionListener(e1 -> {
             if (!l.getSelectedValue().equals("none")) {
                 try {
-                    if((Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden")){
+                    if ((Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden")) {
                         Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden", false);
                     }
                     String tag = l.getSelectedValue();
@@ -750,12 +749,13 @@ public class Menu {
 
                     }
 
-                    if(!(Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden")){
+                    if (!(Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden")) {
                         Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden", true);
                     }
 
                 } catch (IOException ex) {
-                    //System.out.println(ex.getMessage());
+                    JOptionPane.showMessageDialog(Main.curFrame, ex.getMessage(),
+                            "I/O error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -882,7 +882,7 @@ public class Menu {
 
                     try {
 
-                        if((Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden")){
+                        if ((Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden")) {
                             Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden", false);
                         }
 
@@ -929,12 +929,13 @@ public class Menu {
                             }
                         }
 
-                        if(!(Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden")){
+                        if (!(Boolean) Files.getAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden")) {
                             Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden", true);
                         }
 
                     } catch (IOException ex) {
-                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(Main.curFrame, ex.getMessage(),
+                                "I/O error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }

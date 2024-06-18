@@ -1,9 +1,11 @@
+import javax.swing.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.Map;
@@ -19,6 +21,7 @@ public class FileRead {
 
         List<File> pictures = new ArrayList<>();
         File folder = new File(path);
+        Pattern ext = Pattern.compile(".*\\.(png|jpg|gif|bmp)");
         if (folder.listFiles() != null) {
             Stream<File> files = Stream.of(folder.listFiles());
             pictures = files.filter(File::isFile)
@@ -34,7 +37,8 @@ public class FileRead {
             try {
                 descriptions.createNewFile();
             } catch (IOException e) {
-                //System.out.println(e.getStackTrace() + " Metadata file wasn't created");
+                JOptionPane.showMessageDialog(Main.curFrame, "Metadata file couldn't be created",
+                        "Filesystem error", JOptionPane.ERROR_MESSAGE);
             }
         }
 
@@ -42,7 +46,8 @@ public class FileRead {
             try {
                 collections.createNewFile();
             } catch (IOException e) {
-                //System.out.println(e.getStackTrace() + " Metadata file wasn't created");
+                JOptionPane.showMessageDialog(Main.curFrame, "Metadata file couldn't be created",
+                        "Filesystem error", JOptionPane.ERROR_MESSAGE);
             }
         }
 
@@ -50,7 +55,8 @@ public class FileRead {
             try {
                 data.createNewFile();
             } catch (IOException e) {
-                //System.out.println(e.getStackTrace() + " Metadata file wasn't created");
+                JOptionPane.showMessageDialog(Main.curFrame, "Metadata file couldn't be created",
+                        "Filesystem error", JOptionPane.ERROR_MESSAGE);
             }
         } else {
             Triple<Map<String, ArrayList<String>>, Map<String, ArrayList<String>>, Map<String, String>> imgData = readData(path);
@@ -78,7 +84,8 @@ public class FileRead {
                 Files.setAttribute(Path.of(descriptions.getPath()), "dos:hidden", true);
             }
         } catch (IOException ioex) {
-            //System.out.println(ioex.getStackTrace());
+            JOptionPane.showMessageDialog(Main.curFrame, "Metadata file couldn't be hidden",
+                    "Filesystem error", JOptionPane.ERROR_MESSAGE);
         }
 
         return (ArrayList<File>) pictures;
@@ -89,7 +96,8 @@ public class FileRead {
         try {
             ft = (FileTime) Files.getAttribute(Path.of(file.getAbsolutePath()), "creationTime");
         } catch (IOException exception) {
-            exception.printStackTrace();
+            JOptionPane.showMessageDialog(Main.curFrame, "Metadata file error",
+                    "Filesystem error", JOptionPane.ERROR_MESSAGE);
         }
         return ft;
     }
@@ -99,7 +107,8 @@ public class FileRead {
         try {
             ft = (FileTime) Files.getAttribute(Path.of(file), "creationTime");
         } catch (IOException exception) {
-            exception.printStackTrace();
+            JOptionPane.showMessageDialog(Main.curFrame, exception.getMessage(),
+                    "Filesystem error", JOptionPane.ERROR_MESSAGE);
         }
         return ft;
     }
@@ -196,8 +205,8 @@ public class FileRead {
             br.close();
 
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println(" Metadata file wasn't found");
+            JOptionPane.showMessageDialog(Main.curFrame, e.getMessage(),
+                    "Filesystem error", JOptionPane.ERROR_MESSAGE);
         }
 
         collections = getCollections();
@@ -214,8 +223,8 @@ public class FileRead {
             }
             br.close();
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println(" Description file wasn't found");
+            JOptionPane.showMessageDialog(Main.curFrame, e.getMessage(),
+                    "Filesystem error", JOptionPane.ERROR_MESSAGE);
         }
 
         return new Triple<>(tags, collections, descriptions);
@@ -248,8 +257,8 @@ public class FileRead {
                 Files.setAttribute(Path.of("src\\.ftcollections"), "dos:hidden", true);
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println(" Collections file wasn't found");
+            JOptionPane.showMessageDialog(Main.curFrame, e.getMessage(),
+                    "Filesystem error", JOptionPane.ERROR_MESSAGE);
         }
         return collections;
     }
@@ -308,7 +317,8 @@ public class FileRead {
                     Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedata"), "dos:hidden", true);
                 }
             } catch (IOException ex) {
-                System.out.println(ex.getMessage());
+                JOptionPane.showMessageDialog(Main.curFrame, ex.getMessage(),
+                        "Filesystem error", JOptionPane.ERROR_MESSAGE);
             }
 
 
@@ -355,7 +365,8 @@ public class FileRead {
                 }
 
             } catch (IOException ex) {
-                System.out.println(ex.getMessage());
+                JOptionPane.showMessageDialog(Main.curFrame, ex.getMessage(),
+                        "Filesystem error", JOptionPane.ERROR_MESSAGE);
             }
 
 
@@ -402,7 +413,8 @@ public class FileRead {
                     Files.setAttribute(Path.of(Main.curPath + "\\.fasttomedesc"), "dos:hidden", true);
                 }
             } catch (IOException ex) {
-                System.out.println(ex.getMessage());
+                JOptionPane.showMessageDialog(Main.curFrame, ex.getMessage(),
+                        "Filesystem error", JOptionPane.ERROR_MESSAGE);
             }
 
 

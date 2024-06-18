@@ -25,6 +25,22 @@ public class Search {
         l.setVerticalAlignment(SwingConstants.CENTER);
         dial.add(l, BorderLayout.NORTH);
 
+        JButton openHelp = new JButton("Help");
+
+        openHelp.addActionListener(e -> {
+            JDialog jd = new JDialog(dial);
+            JTextArea jt = new JTextArea("Supported:\n \" tag <string> \" \n \" extension <.string> \" \n \" name <string> \" \n \"date < | > | = <yyyy-mm-dd/yyyy-mm/yyyy> \" \n \" description <string> \" \n All the predicated are either ORed or ANDed \n Spaces between are obligatory");
+            jt.setEditable(false);
+            jd.add(jt, BorderLayout.CENTER);
+            jd.setSize(new Dimension(260, 160));
+            jd.setPreferredSize(new Dimension(260, 160));
+            jd.pack();
+            jd.setLocationRelativeTo(dial);
+            jd.setVisible(true);
+        });
+
+        dial.add(openHelp,BorderLayout.SOUTH);
+
         JTextArea jt = new JTextArea();
         jt.setPreferredSize(new Dimension(260, 80));
         jt.setEditable(true);
@@ -38,11 +54,14 @@ public class Search {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    Thread searchThread = new Thread(() -> {
                     String filter = jt.getText();
                     filter += " ";
                     jt.setText("");
                     search(filter);
                     dial.dispose();
+                    });
+                    searchThread.run();
                 }
             }
 
@@ -52,8 +71,8 @@ public class Search {
             }
         });
 
-        dial.setSize(new Dimension(260, 80));
-        dial.setPreferredSize(new Dimension(260, 80));
+        dial.setSize(new Dimension(260, 120));
+        dial.setPreferredSize(new Dimension(260, 120));
         dial.pack();
         dial.setLocationRelativeTo(Main.curFrame);
         dial.setVisible(true);
@@ -97,7 +116,7 @@ public class Search {
 
         while (i < ai.length - 1 && ai[i] == bi[i]) {
             i++;
-            if (bi[i]==0){
+            if (bi[i] == 0) {
                 i--;
                 break;
             }
@@ -150,6 +169,18 @@ public class Search {
             );
         }
 
+        if (filter.contains("name")) {
+            conditions.add(
+                    f -> f.getName().substring(0,f.getName().indexOf('.')).contains(filter.substring(filter.indexOf("name") + 5, filter.indexOf(' ', filter.indexOf("name") + 5)))
+            );
+        }
+
+        if (filter.contains("extension")) {
+            conditions.add(
+                    f -> f.getName().contains(filter.substring(filter.indexOf("extension") + 10, filter.indexOf(' ', filter.indexOf("extension") + 10)))
+            );
+        }
+
         if (filter.contains("collection")) {
             conditions.add(
                     f -> {
@@ -180,13 +211,13 @@ public class Search {
 
         String mode = "and";
 
-        if (filter.contains("|")){
+        if (filter.contains("|")) {
             mode = "or";
         }
 
         HashSet<File> filteredPhotos = new HashSet<>(Main.pictures);
 
-        if(mode.equals("and")) {
+        if (mode.equals("and")) {
             for (Predicate<File> pred : conditions) {
 
                 buf.addAll(filteredPhotos);
@@ -200,7 +231,7 @@ public class Search {
                 buf.clear();
 
             }
-        }else{
+        } else {
             for (Predicate<File> pred : conditions) {
 
                 filteredPhotos.addAll(Main.pictures.stream()
@@ -210,14 +241,14 @@ public class Search {
             }
         }
 
-        if(!filteredPhotos.isEmpty()) {
+        if (!filteredPhotos.isEmpty()) {
 
             Main.pictures.clear();
 
             List<File> pics;
 
             pics = filteredPhotos.stream()
-                    .sorted(Comparator.comparingInt(a -> a.getName().charAt(0)*10+a.getName().charAt(1)))
+                    .sorted(Comparator.comparingInt(a -> a.getName().charAt(0) * 10 + a.getName().charAt(1)))
                     .toList();
 
             Main.pictures.addAll(pics);
@@ -232,24 +263,20 @@ public class Search {
             Main.curFrame.pack();
             Main.curFrame.setVisible(true);
 
-            try {
-                Main.curFrame.remove(Main.label.third);
-                if (Main.pictures.size() > Main.i) {
-                    Main.label = Image.ParseImageF(Main.label.first, Main.pictures.get(Main.i).toString(), Main.x, Main.y);
-                } else {
-                    Main.label.second = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-                }
-                Main.curFrame.add(Main.label.third, BorderLayout.SOUTH);
-                Main.curFrame.pack();
-                Main.curFrame.setVisible(true);
-            } catch (IOException ex) {
-                //System.out.println(ex.getStackTrace());
+            Main.curFrame.remove(Main.label.third);
+            if (Main.pictures.size() > Main.i) {
+                Main.label = Image.ParseImageF(Main.label.first, Main.pictures.get(Main.i).toString(), Main.x, Main.y);
+            } else {
+                Main.label.second = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
             }
+            Main.curFrame.add(Main.label.third, BorderLayout.SOUTH);
+            Main.curFrame.pack();
+            Main.curFrame.setVisible(true);
 
-        }else if(conditions.isEmpty()){
+        } else if (conditions.isEmpty()) {
             JOptionPane.showMessageDialog(Main.curFrame, "Wrong input",
                     "Search error", JOptionPane.ERROR_MESSAGE);
-        }else{
+        } else {
             JOptionPane.showMessageDialog(Main.curFrame, "No such photos in current scope",
                     "Search error", JOptionPane.ERROR_MESSAGE);
         }

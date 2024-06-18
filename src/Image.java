@@ -9,9 +9,11 @@ public class Image {
     private static BufferedImage origImage;
     static File curImage;
 
-    public static Triple<JLabel, BufferedImage, JLabel> ParseImageF(JLabel lbl, String image, int x, int y) throws IOException {
+    public static Triple<JLabel, BufferedImage, JLabel> ParseImageF(JLabel lbl, String image, int x, int y){
         File imageF = new File(image);
-        BufferedImage img = ImageIO.read(imageF);
+
+        try {
+            BufferedImage img = ImageIO.read(imageF);
         int newWidth = img.getWidth();
         int newHeight = img.getHeight();
         double multiplier;
@@ -51,6 +53,17 @@ public class Image {
         lbl.setHorizontalAlignment(SwingConstants.CENTER);
         lbl.setVerticalAlignment(SwingConstants.CENTER);
         return new Triple<>(lbl, img, text);
+        }catch (IOException ex){
+            JOptionPane.showMessageDialog(Main.curFrame, "Exception while reading a photo",
+                    "I/O Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        JLabel text = new JLabel(image);
+        text.setHorizontalTextPosition(SwingConstants.CENTER);
+        text.setVerticalTextPosition(SwingConstants.CENTER);
+        text.setHorizontalAlignment(SwingConstants.CENTER);
+        text.setVerticalAlignment(SwingConstants.CENTER);
+        return new Triple<>(lbl,new BufferedImage(1,1,BufferedImage.TYPE_INT_ARGB),text);
     }
 
     private static BufferedImage rescaleImg(BufferedImage img, int newWidth, int newHeight){
