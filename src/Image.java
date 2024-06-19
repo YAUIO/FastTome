@@ -74,10 +74,10 @@ public class Image {
         return out;
     }
 
-    public static Triple<JLabel, BufferedImage, JLabel> reScale(String mode, Triple<JLabel, BufferedImage, JLabel> img) {
+    public static Triple<JLabel, BufferedImage, JLabel> reScale(String mode, Triple<JLabel, BufferedImage, JLabel> img, int scale) {
         int newWidth = img.second.getWidth();
         int newHeight = img.second.getHeight();
-        double multiplier = 1.2;
+        double multiplier = 1.2*scale;
         if (mode.equals("UP")) {
             newWidth = (int) (multiplier * newWidth);
             newHeight = (int) (multiplier * newHeight);

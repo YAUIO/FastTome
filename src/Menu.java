@@ -178,7 +178,7 @@ public class Menu {
                 Main.curFrame.setVisible(true);
 
             } else {
-                Main.pictures = FileRead.getFiles(Main.curPath);
+                Menu.directory = Main.curPath;
             }
 
         });
@@ -786,12 +786,12 @@ public class Menu {
         return scrollPane;
     }
 
-    private static void openDirDialog() {
+    public static void openDirDialog() {
         JFileChooser jFileChooser = new JFileChooser();
         jFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         jFileChooser.addActionListener(e -> {
             if (e.getActionCommand().equals("ApproveSelection")) {
-                directory = jFileChooser.getSelectedFile().toString();
+                Menu.directory = jFileChooser.getSelectedFile().toString();
             }
         });
 

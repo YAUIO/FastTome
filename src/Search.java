@@ -1,24 +1,21 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.attribute.FileTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Search {
+    private static Pair<String[], int[]> count;
+    private static char mode;
+
     public static void filterDialogue() {
         JDialog dial = new JDialog(Main.curFrame);
-        JLabel l = new JLabel("AND is &, OR is |");
+        JLabel l = new JLabel("Shift+Enter new line, AND is &, OR is |");
         l.setHorizontalTextPosition(SwingConstants.CENTER);
         l.setVerticalTextPosition(SwingConstants.CENTER);
         l.setHorizontalAlignment(SwingConstants.CENTER);
@@ -29,22 +26,33 @@ public class Search {
 
         openHelp.addActionListener(e -> {
             JDialog jd = new JDialog(dial);
-            JTextArea jt = new JTextArea("Supported:\n \" tag <string> \" \n \" extension <.string> \" \n \" name <string> \" \n \"date < | > | = <yyyy-mm-dd/yyyy-mm/yyyy> \" \n \" description <string> \" \n All the predicated are either ORed or ANDed \n Spaces between are obligatory");
+            JTextArea jt = new JTextArea("Supported:\n tag <string> \n extension <string> \n name <string> \n date < | > | = <yyyy-mm-dd/yyyy-mm/yyyy> \n description <string> \n description \"<string> <string>\" \n All the predicated are either ORed or ANDed \n Spaces between are obligatory");
             jt.setEditable(false);
             jd.add(jt, BorderLayout.CENTER);
-            jd.setSize(new Dimension(260, 160));
-            jd.setPreferredSize(new Dimension(260, 160));
+            jd.setSize(new Dimension(260, 200));
+            jd.setPreferredSize(new Dimension(260, 200));
             jd.pack();
             jd.setLocationRelativeTo(dial);
             jd.setVisible(true);
         });
 
-        dial.add(openHelp,BorderLayout.SOUTH);
+        dial.add(openHelp, BorderLayout.SOUTH);
 
         JTextArea jt = new JTextArea();
         jt.setPreferredSize(new Dimension(260, 80));
         jt.setEditable(true);
         dial.add(jt, BorderLayout.CENTER);
+
+        final Thread searchThread = new Thread(() -> {
+            String filter = jt.getText();
+            if (!filter.endsWith(" ")) {
+                filter = filter + " ";
+            }
+            filter = filter.replace('\n', ' ');
+            jt.setText("");
+            dial.dispose();
+            search(filter);
+        });
 
         jt.addKeyListener(new KeyListener() {
             @Override
@@ -53,15 +61,10 @@ public class Search {
 
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    Thread searchThread = new Thread(() -> {
-                    String filter = jt.getText();
-                    filter += " ";
-                    jt.setText("");
-                    search(filter);
-                    dial.dispose();
-                    });
-                    searchThread.run();
+                if (e.getModifiersEx() == InputEvent.SHIFT_DOWN_MASK && e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    jt.setText(jt.getText() + "\n");
+                } else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    searchThread.start();
                 }
             }
 
@@ -138,17 +141,70 @@ public class Search {
 
         ArrayList<File> buf = new ArrayList<>();
 
+        String[] filters = {"date", "tag", "name", "extension", "collection", "description"};
+
+        count = new Pair<>(filters, new int[filters.length]);
+
+        int i = 0;
+        int ii;
+
+        if (filter.contains("|")) {
+            mode = '|';
+        } else {
+            mode = '&';
+        }
+
+        while (i < count.first.length) {
+            ii = 0;
+            count.second[i] = 0;
+            while (true) {
+                ii = filter.indexOf(count.first[i], ii);
+                if (ii != -1) {
+                    count.second[i]++;
+                    ii++;
+                } else {
+                    break;
+                }
+            }
+            i++;
+        }
+
         if (filter.contains("date")) {
             conditions.add(
                     f -> {
-                        if (FileRead.imgDate.containsKey(f.getName())) {
-                            if (FileRead.imgDate.get(f.getName()) != null) {
-                                String date = FileRead.imgDate.get(f.getName()).toString();
-                                date = date.substring(0, date.indexOf('T'));
-                                String rhs = filter.substring(filter.indexOf("date") + 7, filter.indexOf(' ', filter.indexOf("date") + 8));
-                                char sign = filter.charAt(filter.indexOf("date") + 5);
-                                return compareDate(date, rhs, sign);
+                        if (FileRead.imgDate.containsKey(f.getName()) && FileRead.imgDate.get(f.getName()) != null) {
+                            String date = FileRead.imgDate.get(f.getName()).toString();
+                            date = date.substring(0, date.indexOf('T'));
+                            ArrayList<String> rhs = new ArrayList<>();
+                            ArrayList<Character> sign = new ArrayList<>();
+                            int c = 0;
+                            int o = 0;
+                            int os = 0;
+                            while (c < count.second[0]) {
+                                o = filter.indexOf("date", o) + 7;
+                                rhs.add(filter.substring(o, filter.indexOf(' ', o + 1)));
+
+                                os = filter.indexOf("date", os) + 5;
+                                sign.add(filter.charAt(os));
+
+                                o++;
+                                os += 5;
+
+                                c++;
                             }
+
+                            c = 1;
+                            boolean r = compareDate(date, rhs.getFirst(), sign.getFirst());
+
+                            while (c < rhs.size()) {
+                                if (mode == '|') {
+                                    r = r || compareDate(date, rhs.get(c), sign.get(c));
+                                } else if (mode == '&') {
+                                    r = r && compareDate(date, rhs.get(c), sign.get(c));
+                                }
+                                c++;
+                            }
+                            return r;
                         }
                         return false;
                     }
@@ -158,66 +214,173 @@ public class Search {
         if (filter.contains("tag")) {
             conditions.add(
                     f -> {
-                        if (FileRead.imgTags.containsKey(f.getName())) {
-                            if (!FileRead.imgTags.get(f.getName()).isEmpty()) {
-                                ArrayList<String> tags = FileRead.imgTags.get(f.getName());
-                                return tags.contains(filter.substring(filter.indexOf("tag") + 4, filter.indexOf(' ', filter.indexOf("tag") + 4)));
-                            }
+                        if (!FileRead.imgTags.containsKey(f.getName()) || FileRead.imgTags.get(f.getName()).isEmpty()) {
+                            return false;
                         }
-                        return false;
+
+                        int c = 0;
+                        int o = 0;
+                        ArrayList<String> bufsubstr = new ArrayList<>();
+                        while (c < count.second[1]) {
+                            o = filter.indexOf("tag", o) + 4;
+                            bufsubstr.add(filter.substring(o, filter.indexOf(' ', o)));
+                            c++;
+                            o++;
+                        }
+
+                        c = 1;
+                        boolean r = FileRead.imgTags.get(f.getName()).contains(bufsubstr.getFirst());
+                        while (c < bufsubstr.size()) {
+                            if (mode == '|') {
+                                r = r || FileRead.imgTags.get(f.getName()).contains(bufsubstr.get(c));
+                            } else if (mode == '&') {
+                                r = r && FileRead.imgTags.get(f.getName()).contains(bufsubstr.get(c));
+                            }
+                            c++;
+                        }
+
+                        return r;
                     }
             );
         }
 
         if (filter.contains("name")) {
             conditions.add(
-                    f -> f.getName().substring(0,f.getName().indexOf('.')).contains(filter.substring(filter.indexOf("name") + 5, filter.indexOf(' ', filter.indexOf("name") + 5)))
+                    f -> {
+                        int c = 0;
+                        int o = 0;
+                        ArrayList<String> bufsubstr = new ArrayList<>();
+                        while (c < count.second[2]) {
+                            o = filter.indexOf("name", o) + 5;
+                            bufsubstr.add(filter.substring(o, filter.indexOf(' ', o)));
+                            c++;
+                            o++;
+                        }
+
+                        c = 1;
+                        boolean r = f.getName().substring(0, f.getName().indexOf('.')).contains(bufsubstr.getFirst());
+                        while (c < bufsubstr.size()) {
+                            if (mode == '|') {
+                                r = r || f.getName().substring(0, f.getName().indexOf('.')).contains(bufsubstr.get(c));
+                            } else if (mode == '&') {
+                                r = r && f.getName().substring(0, f.getName().indexOf('.')).contains(bufsubstr.get(c));
+                            }
+                            c++;
+                        }
+
+                        return r;
+                    }
             );
         }
 
         if (filter.contains("extension")) {
             conditions.add(
-                    f -> f.getName().contains(filter.substring(filter.indexOf("extension") + 10, filter.indexOf(' ', filter.indexOf("extension") + 10)))
+                    f -> {
+                        int c = 0;
+                        int o = 0;
+                        ArrayList<String> bufsubstr = new ArrayList<>();
+                        while (c < count.second[3]) {
+                            o = filter.indexOf("extension", o) + 10;
+                            bufsubstr.add(filter.substring(o, filter.indexOf(' ', o)));
+                            c++;
+                            o++;
+                        }
+
+                        c = 1;
+                        boolean r = f.getName().contains(bufsubstr.getFirst());
+                        while (c < bufsubstr.size()) {
+                            if (mode == '|') {
+                                r = r || f.getName().contains(bufsubstr.get(c));
+                            } else if (mode == '&') {
+                                r = r && f.getName().contains(bufsubstr.get(c));
+                            }
+                            c++;
+                        }
+
+                        return r;
+                    }
             );
         }
 
         if (filter.contains("collection")) {
             conditions.add(
                     f -> {
-                        if (FileRead.imgColl.containsKey(f.getAbsolutePath())) {
-                            if (!FileRead.imgColl.get(f.getAbsolutePath()).isEmpty()) {
-                                ArrayList<String> collections = FileRead.imgColl.get(f.getAbsolutePath());
-                                return collections.contains(filter.substring(filter.indexOf("collection") + 10, filter.indexOf(' ', filter.indexOf("collection") + 10)));
-                            }
+                        if (!FileRead.imgColl.containsKey(f.getAbsolutePath()) || FileRead.imgColl.get(f.getAbsolutePath()).isEmpty()) {
+                            return false;
                         }
-                        return false;
+
+                        int c = 0;
+                        int o = 0;
+                        ArrayList<String> bufsubstr = new ArrayList<>();
+                        while (c < count.second[4]) {
+                            o = filter.indexOf("collection", o) + 11;
+                            bufsubstr.add(filter.substring(o, filter.indexOf(' ', o)));
+                            c++;
+                            o++;
+                        }
+
+                        c = 1;
+                        boolean r = FileRead.imgColl.get(f.getAbsolutePath()).contains(bufsubstr.getFirst());
+                        while (c < bufsubstr.size()) {
+                            if (mode == '|') {
+                                r = r || FileRead.imgColl.get(f.getAbsolutePath()).contains(bufsubstr.get(c));
+                            } else if (mode == '&') {
+                                r = r && FileRead.imgColl.get(f.getAbsolutePath()).contains(bufsubstr.get(c));
+                            }
+                            c++;
+                        }
+
+                        return r;
                     }
             );
+
         }
 
         if (filter.contains("description")) {
             conditions.add(
                     f -> {
-                        if (FileRead.imgDesc.containsKey(f.getName())) {
-                            if (!FileRead.imgDesc.get(f.getName()).isEmpty()) {
-                                String description = FileRead.imgDesc.get(f.getName());
-                                return description.contains(filter.substring(filter.indexOf("description") + 12, filter.indexOf(' ', filter.indexOf("description") + 12)));
-                            }
+                        if (!FileRead.imgDesc.containsKey(f.getName()) || FileRead.imgDesc.get(f.getName()).isEmpty()) {
+                            return false;
                         }
-                        return false;
+
+                        int c = 0;
+                        int o = 0;
+                        ArrayList<String> bufsubstr = new ArrayList<>();
+                        while (c < count.second[5]) {
+                            o = filter.indexOf("description", o) + 12;
+
+                            if(filter.indexOf('\"', o)!=-1) {
+                                o++;
+                                bufsubstr.add(filter.substring(o, filter.indexOf('\"', o+2)));
+                            }else{
+                                bufsubstr.add(filter.substring(o, filter.indexOf(' ', o)));
+                            }
+
+                            bufsubstr.set(bufsubstr.size()-1,bufsubstr.getLast().replace('\"',' '));
+                            c++;
+                            o++;
+                        }
+
+                        c = 1;
+                        boolean r = FileRead.imgDesc.get(f.getName()).contains(bufsubstr.getFirst());
+                        while (c < bufsubstr.size()) {
+                            if (mode == '|') {
+                                r = r || FileRead.imgDesc.get(f.getName()).contains(bufsubstr.get(c));
+                            } else if (mode == '&') {
+                                r = r && FileRead.imgDesc.get(f.getName()).contains(bufsubstr.get(c));
+                            }
+                            c++;
+                        }
+
+                        return r;
                     }
             );
         }
 
-        String mode = "and";
+        HashSet<File> filteredPhotos = new HashSet<>();
 
-        if (filter.contains("|")) {
-            mode = "or";
-        }
-
-        HashSet<File> filteredPhotos = new HashSet<>(Main.pictures);
-
-        if (mode.equals("and")) {
+        if (mode == '&') {
+            filteredPhotos = new HashSet<>(Main.pictures);
             for (Predicate<File> pred : conditions) {
 
                 buf.addAll(filteredPhotos);
@@ -272,6 +435,8 @@ public class Search {
             Main.curFrame.add(Main.label.third, BorderLayout.SOUTH);
             Main.curFrame.pack();
             Main.curFrame.setVisible(true);
+            JOptionPane.showMessageDialog(Main.curFrame, "Search completed, " + Main.pictures.size() + " photos found",
+                    "Information", JOptionPane.INFORMATION_MESSAGE);
 
         } else if (conditions.isEmpty()) {
             JOptionPane.showMessageDialog(Main.curFrame, "Wrong input",
@@ -280,6 +445,7 @@ public class Search {
             JOptionPane.showMessageDialog(Main.curFrame, "No such photos in current scope",
                     "Search error", JOptionPane.ERROR_MESSAGE);
         }
+
 
     }
 }
